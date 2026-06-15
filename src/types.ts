@@ -33,3 +33,23 @@ export interface Team {
     rate: number;
   }[];
 }
+
+export interface SyncedTeamPayload {
+  dashboard: Team;
+  source: {
+    briefing: string;
+    specialNotes: string;
+    operatorFeedback: string;
+    gptSummary: string;
+  };
+  syncedAt: string;
+}
+
+export interface DashboardDataState {
+  teams: Team[];
+  dataUpdatedAt: string;
+  checkinUpdatedThrough: string;
+  sourceMode: "live" | "snapshot";
+  isLoading: boolean;
+  error: string;
+}

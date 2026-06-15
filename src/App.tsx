@@ -1,4 +1,4 @@
-import { teams, project } from "./data/projectData";
+import { project } from "./data/projectData";
 import {
   DashboardHeader,
   DataSourceSummary,
@@ -10,8 +10,17 @@ import {
   TeamStatusTabs,
 } from "./components/Dashboard";
 import { calculateRiskScore, getDaysUntil, getRiskLevel } from "./utils/risk";
+import { useDashboardData } from "./hooks/useDashboardData";
 
 export default function App() {
+  const {
+    teams,
+    dataUpdatedAt,
+    checkinUpdatedThrough,
+    sourceMode,
+    isLoading,
+    error,
+  } = useDashboardData();
   const scores = teams.map(calculateRiskScore);
   const riskTeams = scores.filter((score) => getRiskLevel(score) !== "Normal").length;
   const averageRisk = Math.round(scores.reduce((sum, score) => sum + score, 0) / teams.length);
@@ -25,8 +34,11 @@ export default function App() {
         <DashboardHeader today={project.today} />
         <DataSourceSummary
           sources={project.dataSources}
-          updatedAt={project.dataUpdatedAt}
-          checkinUpdatedThrough={project.checkinUpdatedThrough}
+          updatedAt={dataUpdatedAt}
+          checkinUpdatedThrough={checkinUpdatedThrough}
+          sourceMode={sourceMode}
+          isLoading={isLoading}
+          error={error}
         />
         <section className="kpi-grid">
           <KpiCard label="전체 팀" value={teams.length} hint="운영 대상 프로젝트 팀" />

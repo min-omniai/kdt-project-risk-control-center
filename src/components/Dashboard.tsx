@@ -27,16 +27,28 @@ export function DataSourceSummary({
   sources,
   updatedAt,
   checkinUpdatedThrough,
+  sourceMode,
+  isLoading,
+  error,
 }: {
   sources: string[];
   updatedAt: string;
   checkinUpdatedThrough: string;
+  sourceMode: "live" | "snapshot";
+  isLoading: boolean;
+  error: string;
 }) {
+  const syncLabel = isLoading
+    ? "Supabase 최신 데이터 확인 중"
+    : sourceMode === "live"
+      ? "Google Sheets 자동 동기화"
+      : "Google Sheets 분석 스냅샷";
+
   return (
-    <section className="source-summary">
-      <div><span className="source-status" /> Google Sheets 분석 스냅샷</div>
+    <section className={`source-summary ${error ? "source-warning" : ""}`}>
+      <div><span className="source-status" /> {syncLabel}</div>
       <p>{sources.join(" + ")}</p>
-      <small>시트 수정 {updatedAt} · 체크인 데이터 {checkinUpdatedThrough}까지 반영</small>
+      <small>{error || `동기화 ${updatedAt} · 체크인 ${checkinUpdatedThrough}까지 반영`}</small>
     </section>
   );
 }

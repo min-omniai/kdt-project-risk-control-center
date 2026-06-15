@@ -1,0 +1,305 @@
+const CONFIG = {
+  managementSpreadsheetId: "17o-8mP2AsSKrtwEZKPCgD55Qbj2yPmVrAas38uU4Vzg",
+  managementSheetName: "공용",
+  checkinSpreadsheetId: "1imTQdYhvmgOsVHgVOySvxuy1o4FsFyJrha1CiSTVQOY",
+  checkinSheetNames: ["Day-1", "Day-2", "Day-3"],
+  companies: {
+    1: "더브릭스", 2: "더브릭스", 3: "더브릭스",
+    4: "바삭한", 5: "바삭한",
+    6: "유닉온", 7: "유닉온", 8: "유닉온",
+  },
+};
+
+const RISK_KEYWORDS = {
+  planningRisk: ["기획 미정", "기획 미확정", "미정 기획", "기획 의존", "기획 문서 없이", "기획서 부족"],
+  scheduleRisk: ["지연", "일정 재조정", "일정 변경", "시간 부족", "병목", "밀린", "작업량 과다"],
+  technicalRisk: ["버그", "에러", "예외 처리", "작동 안", "통합 지연", "기술 검증", "R&D"],
+  healthRisk: ["건강", "컨디션", "복통", "허리", "수면", "피로", "멘탈", "의욕", "조퇴"],
+  collaborationRisk: ["이탈", "탈퇴", "인원 재배치", "인수인계", "소통 문제", "협업 문제", "업무 공백"],
+};
+
+function syncProjectRiskData() {
+  const properties = PropertiesService.getScriptProperties();
+  const supabaseUrl = requiredProperty_(properties, "SUPABASE_URL");
+  const publishableKey = requiredProperty_(properties, "SUPABASE_PUBLISHABLE_KEY");
+  const syncEmail = requiredProperty_(properties, "SYNC_EMAIL");
+  const syncPassword = requiredProperty_(properties, "SYNC_PASSWORD");
+
+  const accessToken = signIn_(supabaseUrl, publishableKey, syncEmail, syncPassword);
+  const management = readManagementSheet_();
+  const checkins = readCheckinSheets_();
+  const recordedDate = checkins.length
+    ? checkins.map((item) => item.date).sort().reverse()[0]
+    : Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd");
+  const syncedAt = new Date().toISOString();
+
+  const rows = Array.from({ length: 8 }, (_, index) => {
+    const teamId = index + 1;
+    const source = management.teams[teamId] || emptyManagementTeam_();
+    const teamCheckins = checkins.map((day) => summarizeTeamCheckin_(day, teamId));
+    const dashboard = buildDashboardTeam_(teamId, source, management.gptSummary, teamCheckins);
+
+    return {
+      team_id: teamId,
+      recorded_date: recordedDate,
+      payload: {
+        dashboard,
+        source: {
+          briefing: source.briefing,
+          specialNotes: source.specialNotes,
+          operatorFeedback: source.operatorFeedback,
+          gptSummary: extractGptTeamLine_(management.gptSummary, teamId),
+        },
+        syncedAt,
+      },
+      updated_at: syncedAt,
+    };
+  });
+
+  upsertTeamStatus_(supabaseUrl, publishableKey, accessToken, rows);
+  console.log(JSON.stringify({ syncedAt, recordedDate, teams: rows.length }));
+}
+
+function createTimeTrigger() {
+  ScriptApp.getProjectTriggers()
+    .filter((trigger) => trigger.getHandlerFunction() === "syncProjectRiskData")
+    .forEach((trigger) => ScriptApp.deleteTrigger(trigger));
+
+  ScriptApp.newTrigger("syncProjectRiskData")
+    .timeBased()
+    .everyHours(1)
+    .create();
+}
+
+function readManagementSheet_() {
+  const sheet = SpreadsheetApp
+    .openById(CONFIG.managementSpreadsheetId)
+    .getSheetByName(CONFIG.managementSheetName);
+  if (!sheet) throw new Error("통합 관리 시트의 공용 탭을 찾을 수 없습니다.");
+
+  const values = sheet.getDataRange().getDisplayValues();
+  const teams = {};
+  let gptSummary = "";
+
+  values.slice(1).forEach((row) => {
+    const teamMatch = String(row[0] || "").match(/^(\d+)팀/m);
+    if (teamMatch) {
+      teams[Number(teamMatch[1])] = {
+        briefing: row[3] || "",
+        specialNotes: row[4] || "",
+        operatorFeedback: row[5] || "",
+      };
+    }
+    if (!gptSummary && row[6]) gptSummary = row[6];
+  });
+
+  return { teams, gptSummary };
+}
+
+function readCheckinSheets_() {
+  const spreadsheet = SpreadsheetApp.openById(CONFIG.checkinSpreadsheetId);
+
+  return CONFIG.checkinSheetNames.map((sheetName) => {
+    const sheet = spreadsheet.getSheetByName(sheetName);
+    if (!sheet) throw new Error("체크인 탭을 찾을 수 없습니다: " + sheetName);
+
+    const values = sheet.getDataRange().getDisplayValues();
+    return {
+      sheetName,
+      date: normalizeDate_(values[1] && values[1][2]),
+      rows: values.slice(4).filter((row) => row[1] && row[2]),
+    };
+  }).filter((day) => day.date);
+}
+
+function summarizeTeamCheckin_(day, teamId) {
+  const rows = day.rows.filter((row) => Number(row[1]) === teamId);
+  const submitted = rows.filter((row) => row[3] || row[4] || row[5] || (row[6] && row[6] !== "대기"));
+  const progressValues = submitted
+    .map((row) => parseProgress_(row[3]))
+    .filter((value) => value !== null);
+
+  return {
+    date: day.date,
+    checkinRate: rows.length ? Math.round((submitted.length / rows.length) * 100) : 0,
+    progress: progressValues.length
+      ? Math.round(progressValues.reduce((sum, value) => sum + value, 0) / progressValues.length)
+      : null,
+    riskNotes: submitted
+      .filter((row) => row[5] || row[6] === "주의")
+      .map((row) => [row[4], row[5]].filter(Boolean).join(" "))
+      .filter(Boolean),
+  };
+}
+
+function buildDashboardTeam_(teamId, source, gptSummary, checkins) {
+  const gptLine = extractGptTeamLine_(gptSummary, teamId);
+  const latest = [...checkins].sort((a, b) => b.date.localeCompare(a.date))[0] || {};
+  const combined = [
+    source.briefing,
+    source.specialNotes,
+    source.operatorFeedback,
+    gptLine,
+    ...checkins.flatMap((item) => item.riskNotes),
+  ].join("\n");
+  const parsedSummary = parseGptTeamSummary_(gptLine);
+  const risks = extractRiskSentences_(combined);
+  const goodPoints = extractPositiveSentences_(source.briefing);
+
+  return {
+    teamId,
+    company: CONFIG.companies[teamId],
+    teamName: teamId + "팀",
+    progress: latest.progress === null || latest.progress === undefined ? 0 : latest.progress,
+    checkinRate: latest.checkinRate || 0,
+    planningRisk: hasAny_(combined, RISK_KEYWORDS.planningRisk),
+    scheduleRisk: hasAny_(combined, RISK_KEYWORDS.scheduleRisk),
+    technicalRisk: hasAny_(combined, RISK_KEYWORDS.technicalRisk),
+    healthRisk: hasAny_(combined, RISK_KEYWORDS.healthRisk),
+    collaborationRisk: hasAny_(combined, RISK_KEYWORDS.collaborationRisk),
+    status: parsedSummary.summary || deriveStatus_(combined),
+    goodPoints: goodPoints.length ? goodPoints : ["체크인 및 브리핑 데이터 수집 완료"],
+    risks,
+    specialNotes: compactList_([source.specialNotes, ...(latest.riskNotes || [])], 2),
+    requiredQuestions: compactList_([
+      parsedSummary.question,
+      defaultQuestion_(teamId, combined),
+    ], 2),
+    checkinHistory: [...checkins]
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map((item) => ({
+        date: item.date.slice(5).replace("-", "."),
+        rate: item.checkinRate,
+      })),
+  };
+}
+
+function extractGptTeamLine_(text, teamId) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => line.startsWith(teamId + "팀")) || "";
+}
+
+function parseGptTeamSummary_(line) {
+  if (!line) return { summary: "", question: "" };
+  const parts = line.split(/\s{2,}|\t+/).map((part) => part.trim()).filter(Boolean);
+  return {
+    summary: parts[2] || parts[1] || "",
+    question: parts[4] || "",
+  };
+}
+
+function extractRiskSentences_(text) {
+  const keywords = Object.values(RISK_KEYWORDS).flat();
+  return compactList_(
+    String(text || "")
+      .split(/\r?\n|[.!?]\s+/)
+      .map(cleanBullet_)
+      .filter((line) => line.length >= 5 && hasAny_(line, keywords)),
+    3,
+  );
+}
+
+function extractPositiveSentences_(text) {
+  const positive = ["완료", "진행", "구현", "안정", "정상", "마무리", "확정", "개선"];
+  return compactList_(
+    String(text || "")
+      .split(/\r?\n/)
+      .map(cleanBullet_)
+      .filter((line) => line.length >= 5 && hasAny_(line, positive) && !line.startsWith("[")),
+    2,
+  );
+}
+
+function deriveStatus_(text) {
+  if (hasAny_(text, ["기획 미정", "기획 미확정", "기획 의존"])) return "기획 확정 필요";
+  if (hasAny_(text, ["지연", "병목", "시간 부족"])) return "일정 회복 필요";
+  if (hasAny_(text, ["버그", "에러", "예외 처리"])) return "기술 검증 필요";
+  return "진행 상황 확인";
+}
+
+function defaultQuestion_(teamId, text) {
+  if (hasAny_(text, RISK_KEYWORDS.planningRisk)) return "미확정 기획의 담당자와 확정 일정은 정해졌는가?";
+  if (hasAny_(text, RISK_KEYWORDS.scheduleRisk)) return "현재 가장 지연된 작업과 복구 완료일은 언제인가?";
+  if (hasAny_(text, RISK_KEYWORDS.technicalRisk)) return "플레이 가능한 빌드에서 핵심 흐름이 검증됐는가?";
+  if (hasAny_(text, RISK_KEYWORDS.healthRisk)) return "컨디션 이슈에 대비한 업무 재분배가 필요한가?";
+  return teamId + "팀의 다음 마일스톤 완료 기준이 명확한가?";
+}
+
+function parseProgress_(value) {
+  const text = String(value || "").trim();
+  const percent = text.match(/(\d{1,3})\s*%/);
+  if (percent) return Math.min(Number(percent[1]), 100);
+  const number = Number(text);
+  if (!Number.isFinite(number)) return null;
+  return number <= 1 ? Math.round(number * 100) : Math.min(Math.round(number), 100);
+}
+
+function normalizeDate_(value) {
+  const text = String(value || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+  const date = new Date(text);
+  return Number.isNaN(date.getTime())
+    ? ""
+    : Utilities.formatDate(date, "Asia/Seoul", "yyyy-MM-dd");
+}
+
+function cleanBullet_(value) {
+  return String(value || "").replace(/^[-•\d.)\s]+/, "").trim();
+}
+
+function compactList_(values, limit) {
+  return [...new Set(values.map(cleanBullet_).filter(Boolean))].slice(0, limit);
+}
+
+function hasAny_(text, keywords) {
+  return keywords.some((keyword) => String(text || "").includes(keyword));
+}
+
+function emptyManagementTeam_() {
+  return { briefing: "", specialNotes: "", operatorFeedback: "" };
+}
+
+function requiredProperty_(properties, name) {
+  const value = properties.getProperty(name);
+  if (!value) throw new Error("Script Property가 필요합니다: " + name);
+  return value;
+}
+
+function signIn_(supabaseUrl, publishableKey, email, password) {
+  const response = UrlFetchApp.fetch(
+    supabaseUrl + "/auth/v1/token?grant_type=password",
+    {
+      method: "post",
+      contentType: "application/json",
+      headers: { apikey: publishableKey },
+      payload: JSON.stringify({ email, password }),
+      muteHttpExceptions: true,
+    },
+  );
+  if (response.getResponseCode() >= 300) {
+    throw new Error("Supabase 로그인 실패: " + response.getContentText());
+  }
+  return JSON.parse(response.getContentText()).access_token;
+}
+
+function upsertTeamStatus_(supabaseUrl, publishableKey, accessToken, rows) {
+  const response = UrlFetchApp.fetch(
+    supabaseUrl + "/rest/v1/team_daily_status?on_conflict=team_id,recorded_date",
+    {
+      method: "post",
+      contentType: "application/json",
+      headers: {
+        apikey: publishableKey,
+        Authorization: "Bearer " + accessToken,
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      payload: JSON.stringify(rows),
+      muteHttpExceptions: true,
+    },
+  );
+  if (response.getResponseCode() >= 300) {
+    throw new Error("Supabase 저장 실패: " + response.getContentText());
+  }
+}

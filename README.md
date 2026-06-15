@@ -59,3 +59,17 @@ grant select on table public.admin_profiles to authenticated;
 grant select, insert, update on table public.team_daily_status to authenticated;
 grant usage, select on sequence public.team_daily_status_id_seq to authenticated;
 ```
+
+## Google Sheets 자동 동기화
+
+대시보드는 로그인 후 `team_daily_status`의 팀별 최신 레코드를 읽습니다. 8개 팀
+데이터가 모두 준비되기 전에는 기존 코드 스냅샷을 안전하게 표시합니다.
+
+1. 기존 스키마가 설치되어 있다면 `supabase/enable-realtime-sync.sql`을 Supabase SQL Editor에서 실행합니다.
+2. `google-apps-script/Code.gs`를 통합 관리 시트의 Apps Script 프로젝트에 등록합니다.
+3. `google-apps-script/README.md`에 적힌 Script Properties를 설정합니다.
+4. `syncProjectRiskData`를 한 번 실행한 뒤 `createTimeTrigger`를 실행합니다.
+
+동기화 이후에는 Google Sheets를 수정해도 프런트엔드 코드를 다시 배포할 필요가
+없습니다. Apps Script가 매시간 Supabase를 갱신하고, 열린 대시보드는 Realtime
+이벤트를 받아 최신 데이터를 다시 조회합니다.

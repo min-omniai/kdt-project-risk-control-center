@@ -46,6 +46,9 @@ h1 { margin: 10px 0 7px; font-size: clamp(25px, 3vw, 38px); line-height: 1.2; le
 .source-summary p { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .source-summary small { color: #6e7681; white-space: nowrap; }
 .source-status { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: #3fb950; box-shadow: 0 0 0 3px rgba(63,185,80,.12); }
+.source-summary.source-warning { border-color: rgba(210,153,34,.55); }
+.source-summary.source-warning .source-status { background: #d29922; box-shadow: 0 0 0 3px rgba(210,153,34,.12); }
+.source-summary.source-warning small { color: #d29922; }
 .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 .kpi-card { position: relative; min-height: 130px; padding: 19px; overflow: hidden; border: 1px solid #30363d; border-radius: 10px; background: #161b22; }
 .kpi-card::after { content: ""; position: absolute; right: -20px; bottom: -32px; width: 95px; height: 95px; border-radius: 50%; background: rgba(139,148,158,.05); }
