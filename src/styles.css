@@ -8,6 +8,29 @@
 body { margin: 0; min-width: 320px; background: #0d1117; }
 button, input { font: inherit; }
 main { min-height: 100vh; background: radial-gradient(circle at 80% -10%, rgba(88,166,255,.07), transparent 30%), #0d1117; }
+.auth-page { display: grid; place-items: center; padding: 24px; }
+.auth-card { width: min(430px, 100%); padding: 34px; border: 1px solid #30363d; border-radius: 14px; background: #161b22; box-shadow: 0 24px 80px rgba(0,0,0,.35); }
+.auth-brand { color: #58a6ff; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
+.auth-lock { display: grid; place-items: center; width: 46px; height: 46px; margin: 27px 0 19px; border: 1px solid rgba(88,166,255,.4); border-radius: 12px; color: #58a6ff; background: rgba(88,166,255,.08); font-size: 14px; }
+.auth-card h1 { margin: 0 0 9px; font-size: 27px; }
+.auth-card > p { margin: 0 0 25px; color: #8b949e; font-size: 13px; line-height: 1.6; }
+.auth-card form { display: grid; gap: 15px; }
+.auth-card label { display: grid; gap: 7px; color: #c9d1d9; font-size: 11px; font-weight: 700; }
+.auth-card input { width: 100%; padding: 12px 13px; border: 1px solid #30363d; border-radius: 7px; outline: none; color: #f0f6fc; background: #0d1117; }
+.auth-card input:focus { border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,.1); }
+.auth-card form > button { margin-top: 4px; padding: 12px; border: 1px solid #58a6ff; border-radius: 7px; color: #fff; background: #1f6feb; cursor: pointer; font-weight: 800; }
+.auth-card form > button:disabled { cursor: wait; opacity: .65; }
+.auth-card > small { display: block; margin-top: 20px; color: #6e7681; font-size: 10px; line-height: 1.5; text-align: center; }
+.auth-error { padding: 10px 11px; border: 1px solid rgba(248,81,73,.4); border-radius: 6px; color: #ff7b72; background: rgba(248,81,73,.08); font-size: 11px; }
+.auth-loading { display: flex; align-items: center; gap: 10px; color: #8b949e; font-size: 12px; }
+.auth-loading span { width: 14px; height: 14px; border: 2px solid #30363d; border-top-color: #58a6ff; border-radius: 50%; animation: auth-spin .8s linear infinite; }
+.setup-card code { display: block; margin: 8px 0; padding: 10px; border: 1px solid #30363d; border-radius: 6px; color: #79c0ff; background: #0d1117; font-size: 11px; }
+.secondary-auth-button { width: 100%; padding: 11px; border: 1px solid #30363d; border-radius: 7px; color: #c9d1d9; background: #0d1117; cursor: pointer; font-weight: 700; }
+.admin-session { position: fixed; right: 18px; bottom: 18px; display: flex; align-items: center; gap: 10px; z-index: 20; padding: 9px 10px 9px 12px; border: 1px solid #30363d; border-radius: 9px; background: rgba(22,27,34,.94); box-shadow: 0 12px 40px rgba(0,0,0,.28); backdrop-filter: blur(12px); }
+.admin-session span { color: #8b949e; font-size: 9px; font-weight: 800; }.admin-session i { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: #3fb950; }
+.admin-session strong { max-width: 180px; overflow: hidden; color: #c9d1d9; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.admin-session button { padding: 6px 8px; border: 1px solid #30363d; border-radius: 5px; color: #8b949e; background: #0d1117; cursor: pointer; font-size: 9px; }
+@keyframes auth-spin { to { transform: rotate(360deg); } }
 .app-shell { width: min(1500px, 100%); margin: auto; padding: 34px 28px 60px; }
 .dashboard-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
 .eyebrow { color: #58a6ff; font-size: 11px; font-weight: 800; letter-spacing: .15em; }
@@ -105,3 +128,4 @@ footer { padding-top: 35px; color: #484f58; font-size: 10px; text-align: center;
   .team-section-heading { align-items: stretch; flex-direction: column; gap: 0; }.company-tabs { overflow-x: auto; width: 100%; }.company-tabs button { flex: 1 0 105px; }.company-team-grid.team-count-2 { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 520px) { .kpi-grid, .team-grid, .company-team-grid.team-count-2, .dday-grid { grid-template-columns: 1fr; }.dday-card { min-height: 55px; }.section-title { padding: 17px; } }
+@media (max-width: 520px) { .auth-card { padding: 25px 20px; }.admin-session { right: 10px; bottom: 10px; left: 10px; }.admin-session strong { flex: 1; } }
