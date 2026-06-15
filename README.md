@@ -71,5 +71,5 @@ grant usage, select on sequence public.team_daily_status_id_seq to authenticated
 4. `syncProjectRiskData`를 한 번 실행한 뒤 `createTimeTrigger`를 실행합니다.
 
 동기화 이후에는 Google Sheets를 수정해도 프런트엔드 코드를 다시 배포할 필요가
-없습니다. Apps Script가 매시간 Supabase를 갱신하고, 열린 대시보드는 Realtime
+없습니다. Apps Script가 매일 오전 7시대에 Supabase를 갱신하고, 열린 대시보드는 Realtime
 이벤트를 받아 최신 데이터를 다시 조회합니다.

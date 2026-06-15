@@ -20,7 +20,10 @@
 
 4. `syncProjectRiskData`를 수동 실행하고 권한을 승인합니다.
 5. Supabase `team_daily_status`에 8개 행이 생성됐는지 확인합니다.
-6. `createTimeTrigger`를 한 번 실행하면 매시간 자동 동기화됩니다.
+6. `createTimeTrigger`를 한 번 실행하면 매일 오전 7시대에 자동 동기화됩니다.
+
+Apps Script의 시간 기반 트리거는 정확히 07:00 정각이 아니라
+`07:00~08:00` 사이에 실행될 수 있습니다. 시간대는 `Asia/Seoul`입니다.
 
 운영 환경에서는 개인 관리자 계정과 분리된 동기화 전용 Auth 계정을 만들고
 `admin_profiles`에 등록하는 것을 권장합니다.

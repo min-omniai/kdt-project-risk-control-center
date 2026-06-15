@@ -67,7 +67,9 @@ function createTimeTrigger() {
 
   ScriptApp.newTrigger("syncProjectRiskData")
     .timeBased()
-    .everyHours(1)
+    .atHour(7)
+    .everyDays(1)
+    .inTimezone("Asia/Seoul")
     .create();
 }
 
