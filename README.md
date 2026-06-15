@@ -22,4 +22,10 @@ npm run dev
 npm run build
 ```
 
-`main` 브랜치에 push하면 GitHub Actions가 GitHub Pages에 자동 배포합니다.
+## GitHub Pages 배포
+
+```bash
+npm run deploy
+```
+
+빌드 결과가 `gh-pages` 브랜치에 배포됩니다.
