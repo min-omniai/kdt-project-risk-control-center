@@ -20,6 +20,10 @@ create table if not exists public.team_daily_status (
 alter table public.admin_profiles enable row level security;
 alter table public.team_daily_status enable row level security;
 
+grant select on table public.admin_profiles to authenticated;
+grant select, insert, update on table public.team_daily_status to authenticated;
+grant usage, select on sequence public.team_daily_status_id_seq to authenticated;
+
 create policy "admins can read own profile"
 on public.admin_profiles for select
 to authenticated

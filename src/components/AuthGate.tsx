@@ -125,9 +125,9 @@ function LoginScreen() {
             비밀번호
             <input
               autoComplete="current-password"
-              minLength={8}
+              minLength={4}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="8자 이상"
+              placeholder="비밀번호 입력"
               required
               type="password"
               value={password}

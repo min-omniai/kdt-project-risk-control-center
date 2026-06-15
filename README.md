@@ -51,3 +51,11 @@ values ('AUTH_USER_UUID', '운영 관리자');
 현재 팀 데이터는 비식별 공개 스냅샷입니다. 개인 정보가 포함된 데이터를 보호하려면 `team_daily_status`로 이전한 뒤 로그인 후 조회하도록 변경해야 합니다.
 
 기존 서비스가 공개 회원가입을 사용해 비활성화할 수 없는 경우에도, 대시보드는 `admin_profiles`에 등록된 사용자만 허용합니다.
+
+기존에 스키마를 먼저 실행했다면 아래 권한 구문도 추가로 실행해야 합니다.
+
+```sql
+grant select on table public.admin_profiles to authenticated;
+grant select, insert, update on table public.team_daily_status to authenticated;
+grant usage, select on sequence public.team_daily_status_id_seq to authenticated;
+```
