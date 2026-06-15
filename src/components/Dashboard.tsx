@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Milestone, RiskKey, Team } from "../types";
 import {
   calculateRiskScore,
@@ -156,6 +157,52 @@ export function TeamCard({ team }: { team: Team }) {
       </div>
       <div className="questions"><strong>필수 확인 질문</strong>{team.requiredQuestions.map((q) => <p key={q}><span>?</span>{q}</p>)}</div>
     </article>
+  );
+}
+
+const companies = ["더브릭스", "바삭한", "유닉온"] as const;
+
+export function TeamStatusTabs({ teams }: { teams: Team[] }) {
+  const [selectedCompany, setSelectedCompany] = useState<(typeof companies)[number]>("더브릭스");
+  const visibleTeams = teams.filter((team) => team.company === selectedCompany);
+
+  return (
+    <section className="teams-section">
+      <div className="team-section-heading">
+        <SectionTitle
+          title="팀 상세 현황"
+          subtitle="브리핑·운영진 피드백·GPT 종합 피드백을 교차 분석한 기업별 팀 현황"
+        />
+        <div className="company-tabs" role="tablist" aria-label="기업별 팀 선택">
+          {companies.map((company) => {
+            const companyTeams = teams.filter((team) => team.company === company);
+            const isSelected = selectedCompany === company;
+            return (
+              <button
+                aria-controls={`company-panel-${company}`}
+                aria-selected={isSelected}
+                className={isSelected ? "active" : ""}
+                key={company}
+                onClick={() => setSelectedCompany(company)}
+                role="tab"
+                type="button"
+              >
+                <span>{company}</span>
+                <b>{companyTeams.length}</b>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div
+        aria-label={`${selectedCompany} 팀 상세 현황`}
+        className={`team-grid company-team-grid team-count-${visibleTeams.length}`}
+        id={`company-panel-${selectedCompany}`}
+        role="tabpanel"
+      >
+        {visibleTeams.map((team) => <TeamCard team={team} key={team.teamId} />)}
+      </div>
+    </section>
   );
 }
 

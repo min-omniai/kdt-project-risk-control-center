@@ -7,8 +7,7 @@ import {
   OperatorActions,
   RiskBreakdown,
   RiskRanking,
-  SectionTitle,
-  TeamCard,
+  TeamStatusTabs,
 } from "./components/Dashboard";
 import { calculateRiskScore, getDaysUntil, getRiskLevel } from "./utils/risk";
 
@@ -51,10 +50,7 @@ export default function App() {
           <RiskBreakdown teams={teams} />
         </div>
         <RiskRanking teams={teams} />
-        <section className="teams-section">
-          <SectionTitle title="팀 상세 현황" subtitle="시트 기반 진척, 체크인 추세, 위험 신호와 운영 질문" />
-          <div className="team-grid">{teams.map((team) => <TeamCard team={team} key={team.teamId} />)}</div>
-        </section>
+        <TeamStatusTabs teams={teams} />
         <footer>PROJECT RISK CONTROL CENTER · 공개 버전은 개인 식별 및 민감정보를 표시하지 않습니다.</footer>
       </div>
     </main>
