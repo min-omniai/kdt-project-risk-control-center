@@ -8,9 +8,11 @@ import {
   getRiskLevel,
   sortTeamsByRisk,
 } from "../utils/risk";
+import { getKoreanWeekday } from "../utils/date";
 
 export function DashboardHeader({ today }: { today: string }) {
   const formatted = today.replaceAll("-", ". ");
+  const weekday = getKoreanWeekday(today);
   return (
     <header className="dashboard-header">
       <div>
@@ -18,7 +20,7 @@ export function DashboardHeader({ today }: { today: string }) {
         <h1>오늘, 어떤 팀을 먼저 관리해야 할까요?</h1>
         <p>기업협약 프로젝트 · 위험 신호를 우선순위와 실행 항목으로 전환합니다.</p>
       </div>
-      <div className="date-box"><span>기준일</span><strong>{formatted}</strong><small>월요일</small></div>
+      <div className="date-box"><span>기준일</span><strong>{formatted}</strong><small>{weekday}</small></div>
     </header>
   );
 }

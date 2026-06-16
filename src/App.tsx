@@ -11,6 +11,7 @@ import {
   TeamStatusTabs,
 } from "./components/Dashboard";
 import { calculateRiskScore, getDaysUntil, getRiskLevel } from "./utils/risk";
+import { getTodayInTimeZone } from "./utils/date";
 import { useDashboardData } from "./hooks/useDashboardData";
 
 export default function App() {
@@ -23,6 +24,7 @@ export default function App() {
     error,
     scrumEntries,
   } = useDashboardData();
+  const today = getTodayInTimeZone();
   const scores = teams.map(calculateRiskScore);
   const riskTeams = scores.filter((score) => getRiskLevel(score) !== "Normal").length;
   const averageRisk = Math.round(scores.reduce((sum, score) => sum + score, 0) / teams.length);
@@ -33,7 +35,7 @@ export default function App() {
   return (
     <main>
       <div className="app-shell">
-        <DashboardHeader today={project.today} />
+        <DashboardHeader today={today} />
         <DataSourceSummary
           sources={project.dataSources}
           updatedAt={dataUpdatedAt}
@@ -53,14 +55,14 @@ export default function App() {
           {upcoming.map((item) => (
             <div className="dday-card" key={item.name}>
               <span>{item.name}</span>
-              <strong>D-{getDaysUntil(item.date, project.today)}</strong>
+              <strong>D-{getDaysUntil(item.date, today)}</strong>
               <small>{item.date.replaceAll("-", ".")}</small>
             </div>
           ))}
         </section>
         <OperatorActions teams={teams} />
         <div className="two-column">
-          <MilestoneTimeline milestones={project.milestones} today={project.today} />
+          <MilestoneTimeline milestones={project.milestones} today={today} />
           <RiskBreakdown teams={teams} />
         </div>
         <RiskRanking teams={teams} />
