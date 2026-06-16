@@ -258,7 +258,10 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
   const [selectedTeamId, setSelectedTeamId] = useState(sortedTeams[0]?.teamId ?? 1);
   const [page, setPage] = useState(0);
   const selectedTeam = sortedTeams.find((team) => team.teamId === selectedTeamId) ?? sortedTeams[0];
-  const allActions = getOperatorActionItems(teams);
+  const totalQuestionCount = sortedTeams.reduce(
+    (sum, team) => sum + Math.max(1, team.requiredQuestions.length),
+    0,
+  );
   const actions = selectedTeam ? getTeamActionItems(selectedTeam) : [];
   const pageSize = 3;
   const totalPages = Math.max(1, Math.ceil(actions.length / pageSize));
@@ -271,7 +274,7 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
       <div className="action-heading">
         <div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 필수 확인 질문</h2></div>
         <div className="action-meta">
-          <span className="action-count">총 {allActions.length}개 · {selectedTeam?.teamName ?? "팀"} {actions.length}개</span>
+          <span className="action-count">총 {totalQuestionCount}개 · {selectedTeam?.teamName ?? "팀"} {actions.length}개</span>
           <small>질문 → 판단 기준 → 후속 조치</small>
         </div>
       </div>
