@@ -59,6 +59,88 @@ export function KpiCard({ label, value, hint, tone = "default" }: { label: strin
   return <article className={`kpi-card ${tone}`}><span>{label}</span><strong>{value}</strong><small>{hint}</small></article>;
 }
 
+const healthKeywords = ["건강", "컨디션", "복통", "허리", "수면", "피로", "병원", "조퇴", "지각", "멘탈", "과부하"];
+
+function hasHealthSignal(text: string): boolean {
+  return healthKeywords.some((keyword) => text.includes(keyword));
+}
+
+function healthQuestionFor(team: Team): string {
+  return (
+    team.requiredQuestions.find((question) => hasHealthSignal(question)) ||
+    team.requiredQuestions[0] ||
+    "오늘 작업량 조정이나 역할 재분배가 필요한가?"
+  );
+}
+
+export function HealthWatch({ entries, teams }: { entries: ScrumEntry[]; teams: Team[] }) {
+  const watchItems = teams
+    .filter((team) => team.healthRisk)
+    .map((team) => {
+      const learnerSignals = entries
+        .filter((entry) => entry.teamId === team.teamId)
+        .filter((entry) => hasHealthSignal([entry.workload, entry.comment, entry.note, entry.status].join(" ")))
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+      if (learnerSignals.length) {
+        return learnerSignals.slice(0, 3).map((entry) => ({
+          key: `${team.teamId}-${entry.learnerName}-${entry.date}`,
+          company: team.company,
+          teamName: team.teamName,
+          learnerName: entry.learnerName,
+          date: entry.date,
+          signal: [entry.note, entry.comment, entry.status].filter(Boolean).join(" · ") || entry.workload,
+          question: healthQuestionFor(team),
+        }));
+      }
+
+      return [{
+        key: `${team.teamId}-team`,
+        company: team.company,
+        teamName: team.teamName,
+        learnerName: "팀 단위 확인",
+        date: "최신 종합 피드백",
+        signal: [...team.specialNotes, ...team.risks].find(hasHealthSignal) || team.status,
+        question: healthQuestionFor(team),
+      }];
+    })
+    .flat();
+
+  return (
+    <section className="panel health-watch-panel">
+      <div className="health-watch-heading">
+        <SectionTitle
+          title="컨디션 주의 상세"
+          subtitle="건강·피로·과부하 신호가 있는 팀과 학습자를 바로 확인합니다"
+        />
+        <span>{watchItems.length}건 확인</span>
+      </div>
+      {watchItems.length === 0 ? (
+        <div className="health-empty">현재 컨디션 주의 신호가 등록된 팀은 없습니다.</div>
+      ) : (
+        <div className="health-watch-list">
+          {watchItems.map((item) => (
+            <article className="health-watch-item" key={item.key}>
+              <div className="health-watch-top">
+                <div>
+                  <strong>{item.teamName}</strong>
+                  <small>{item.company}</small>
+                </div>
+                <b>{item.learnerName}</b>
+              </div>
+              <p>{item.signal}</p>
+              <div className="health-watch-bottom">
+                <span>{item.date}</span>
+                <em>{item.question}</em>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function RiskBadge({ score }: { score: number }) {
   const level = getRiskLevel(score);
   return <span className="risk-badge" style={{ color: getRiskColor(level), borderColor: `${getRiskColor(level)}66`, background: `${getRiskColor(level)}18` }}>{level}</span>;

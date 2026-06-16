@@ -2,6 +2,7 @@ import { project } from "./data/projectData";
 import {
   DashboardHeader,
   DataSourceSummary,
+  HealthWatch,
   KpiCard,
   MilestoneTimeline,
   OperatorActions,
@@ -49,8 +50,9 @@ export default function App() {
           <KpiCard label="주의 이상 팀" value={riskTeams} hint="Caution 이상 우선 확인" tone="danger" />
           <KpiCard label="평균 위험 점수" value={averageRisk} hint="100점 기준" tone="warning" />
           <KpiCard label="최신 평균 체크인" value={`${averageCheckin}%`} hint="2026.06.12 제출 기준" tone="info" />
-          <KpiCard label="컨디션 주의 팀" value={healthIssues} hint="개인정보 비식별 집계" tone="health" />
+          <KpiCard label="컨디션 주의 팀" value={healthIssues} hint="팀/학습자 상세 아래 확인" tone="health" />
         </section>
+        <HealthWatch entries={scrumEntries} teams={teams} />
         <section className="dday-grid">
           {upcoming.map((item) => (
             <div className="dday-card" key={item.name}>

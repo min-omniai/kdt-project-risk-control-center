@@ -59,6 +59,19 @@ h1 { margin: 10px 0 7px; font-size: clamp(25px, 3vw, 38px); line-height: 1.2; le
 .kpi-card.warning { border-top-color: #d29922; }.kpi-card.warning strong { color: #d29922; }
 .kpi-card.info { border-top-color: #58a6ff; }.kpi-card.info strong { color: #58a6ff; }
 .kpi-card.health { border-top-color: #bc8cff; }.kpi-card.health strong { color: #bc8cff; }
+.health-watch-panel { margin: 12px 0 18px; overflow: hidden; border-color: rgba(188,140,255,.35); background: linear-gradient(120deg, rgba(188,140,255,.055), transparent 36%), #161b22; }
+.health-watch-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #21262d; }
+.health-watch-heading .section-title { flex: 1; border: 0; }
+.health-watch-heading > span { margin-right: 22px; color: #bc8cff; font-size: 11px; font-weight: 900; white-space: nowrap; }
+.health-watch-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding: 14px 22px 18px; }
+.health-watch-item { min-width: 0; padding: 13px; border: 1px solid #30363d; border-radius: 9px; background: #0d111799; }
+.health-watch-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.health-watch-top div { display: grid; gap: 3px; }.health-watch-top strong { font-size: 14px; }.health-watch-top small { color: #8b949e; font-size: 10px; }
+.health-watch-top b { max-width: 118px; overflow: hidden; padding: 4px 7px; border: 1px solid rgba(188,140,255,.4); border-radius: 999px; color: #bc8cff; background: rgba(188,140,255,.08); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.health-watch-item p { min-height: 34px; margin: 0 0 11px; color: #c9d1d9; font-size: 12px; line-height: 1.45; }
+.health-watch-bottom { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid #21262d; }
+.health-watch-bottom span { color: #8b949e; font-size: 10px; font-weight: 800; }.health-watch-bottom em { color: #8b949e; font-size: 10px; font-style: normal; line-height: 1.45; }
+.health-empty { padding: 20px 22px; color: #8b949e; font-size: 12px; }
 .dday-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 12px 0 22px; }
 .dday-card { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border: 1px solid #21262d; border-radius: 8px; background: rgba(22,27,34,.7); }
 .dday-card span { flex: 1; color: #8b949e; font-size: 12px; }.dday-card strong { color: #f0f6fc; font-size: 18px; }.dday-card small { color: #6e7681; font-size: 10px; }
@@ -142,15 +155,16 @@ h1 { margin: 10px 0 7px; font-size: clamp(25px, 3vw, 38px); line-height: 1.2; le
 .questions { padding-top: 14px; border-top: 1px solid #21262d; }.questions > strong { display: block; margin-bottom: 9px; color: #c9d1d9; font-size: 10px; }
 .questions p { display: flex; gap: 7px; margin: 6px 0; color: #8b949e; font-size: 10px; line-height: 1.45; }.questions p span { color: #58a6ff; font-weight: 900; }
 footer { padding-top: 35px; color: #484f58; font-size: 10px; text-align: center; letter-spacing: .1em; }
-@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); }.team-grid, .scrum-learner-grid { grid-template-columns: repeat(2, 1fr); }.two-column { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); }.team-grid, .scrum-learner-grid, .health-watch-list { grid-template-columns: repeat(2, 1fr); }.two-column { grid-template-columns: 1fr; } }
 @media (max-width: 760px) {
   .app-shell { padding: 22px 15px 40px; }.dashboard-header { align-items: flex-start; flex-direction: column; }.date-box { width: 100%; }
   .source-summary { grid-template-columns: 1fr; gap: 5px; }.source-summary p { white-space: normal; line-height: 1.45; }.source-summary small { white-space: normal; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }.kpi-card { min-height: 115px; }.dday-grid { grid-template-columns: repeat(2, 1fr); }
+  .health-watch-heading { align-items: flex-start; flex-direction: column; gap: 0; }.health-watch-heading > span { margin: 0 17px 15px; }
   .action-panel ol { grid-template-columns: 1fr; }.action-panel li { border-right: 0; border-bottom: 1px solid #30363d; }.action-heading { align-items: flex-start; gap: 10px; }
   .timeline { overflow-x: auto; grid-template-columns: repeat(5, 145px); }.ranking-head { display: none; }.ranking-row { grid-template-columns: 1fr auto; gap: 10px; }.ranking-row .reason, .ranking-row .checklist { grid-column: 1 / -1; }
   .scrum-toolbar { align-items: stretch; flex-direction: column; }.scrum-search { min-width: 0; }.scrum-team-tabs { flex-wrap: nowrap; overflow-x: auto; }.scrum-team-tabs button { flex: 1 0 78px; }
   .team-section-heading { align-items: stretch; flex-direction: column; gap: 0; }.company-tabs { overflow-x: auto; width: 100%; }.company-tabs button { flex: 1 0 105px; }.company-team-grid.team-count-2 { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 520px) { .kpi-grid, .team-grid, .company-team-grid.team-count-2, .dday-grid, .scrum-learner-grid { grid-template-columns: 1fr; }.dday-card { min-height: 55px; }.section-title { padding: 17px; }.scrum-learner-grid { padding: 14px; } }
+@media (max-width: 520px) { .kpi-grid, .team-grid, .company-team-grid.team-count-2, .dday-grid, .scrum-learner-grid, .health-watch-list { grid-template-columns: 1fr; }.dday-card { min-height: 55px; }.section-title { padding: 17px; }.scrum-learner-grid, .health-watch-list { padding: 14px; } }
 @media (max-width: 520px) { .auth-card { padding: 25px 20px; }.admin-session { right: 10px; bottom: 10px; left: 10px; }.admin-session strong { flex: 1; } }
