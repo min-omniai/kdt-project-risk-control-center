@@ -198,6 +198,29 @@ function getTeamActionItems(team: Team) {
   return questions.map((question) => ({ team, question, ...getQuestionContext(team, question) }));
 }
 
+function getCheckinTrend(team: Team): string {
+  const history = team.checkinHistory;
+  if (history.length < 2) return `최신 체크인 ${team.checkinRate}%`;
+  const rates = history.map((item) => item.rate);
+  const first = rates[0];
+  const last = rates[rates.length - 1];
+  const label = last > first ? "개선" : last < first ? "하락" : "유지";
+  return `체크인 ${rates.join(" → ")}% · ${label}`;
+}
+
+function getBriefingReason(team: Team): string {
+  if (hasRiskSignal(team, "planningRisk")) return findContextText(team, ["기획", "DB", "UI", "범위", "확정"], getPrimaryRisk(team));
+  if (hasRiskSignal(team, "technicalRisk")) return findContextText(team, ["Firestore", "Storage", "SO", "버그", "빌드", "프레임워크", "스킬", "투사체", "인터페이스"], getPrimaryRisk(team));
+  if (hasRiskSignal(team, "scheduleRisk")) return findContextText(team, ["수요일", "금요일", "내일", "23일", "18일", "완료", "마감", "이월"], getPrimaryRisk(team));
+  if (hasRiskSignal(team, "healthRisk")) return findContextText(team, healthKeywords, getPrimaryRisk(team));
+  return getPrimaryRisk(team);
+}
+
+function getBriefingGoal(team: Team): string {
+  const firstContext = getQuestionContext(team, getPrimaryQuestion(team));
+  return firstContext.criteria;
+}
+
 function getHealthWatchItems(entries: ScrumEntry[], teams: Team[]) {
   return teams
     .filter((team) => team.healthRisk)
@@ -372,7 +395,11 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
             <div><dt>진척</dt><dd>{selectedTeam.progress}%</dd></div>
             <div><dt>체크인</dt><dd>{selectedTeam.checkinRate}%</dd></div>
           </dl>
-          <p>{getPrimaryRisk(selectedTeam)}</p>
+          <div className="briefing-context">
+            <p><b>최근 흐름</b>{getCheckinTrend(selectedTeam)} · {selectedTeam.status}</p>
+            <p><b>오늘 봐야 할 이유</b>{getBriefingReason(selectedTeam)}</p>
+            <p><b>브리핑 목표</b>{getBriefingGoal(selectedTeam)}</p>
+          </div>
         </div>
       )}
       <ol id="operator-action-list" role="tabpanel" aria-label={`${selectedTeam?.teamName ?? "선택한 팀"} 필수 확인 질문`}>

@@ -70,9 +70,9 @@ export default function App() {
           <KpiCard label="평균위험" value={averageRisk} hint={`${teams.length}개 팀 위험점수 평균`} detail={`최고 ${highestRiskTeams || "-"} ${topTeamScore}점`} tone="warning" />
         </section>
 
-        <OperatorActions teams={teams} />
         <RiskRanking teams={teams} />
         <TeamStatusTabs teams={teams} />
+        <OperatorActions teams={teams} />
 
         <div className="two-column">
           <RiskBreakdown teams={teams} />
