@@ -59,14 +59,23 @@ export function KpiCard({
   label,
   value,
   hint,
+  detail,
   tone = "default",
 }: {
   label: string;
   value: string | number;
   hint: string;
+  detail?: string;
   tone?: string;
 }) {
-  return <article className={`kpi-card ${tone}`}><span>{label}</span><strong>{value}</strong><small>{hint}</small></article>;
+  return (
+    <article className={`kpi-card ${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{hint}</small>
+      {detail && <em>{detail}</em>}
+    </article>
+  );
 }
 
 const healthKeywords = ["건강", "컨디션", "복통", "허리", "수면", "피로", "병원", "조퇴", "지각", "멘탈", "과부하"];
@@ -103,12 +112,19 @@ function getOperatorAction(team: Team): string {
 }
 
 function getOperatorActionItems(teams: Team[]) {
-  return sortTeamsByRisk(teams).slice(0, 3).map((team) => ({
-    team,
-    question: getPrimaryQuestion(team),
-    criteria: getJudgmentCriteria(team),
-    action: getOperatorAction(team),
-  }));
+  const rankedTeams = sortTeamsByRisk(teams);
+  const targetTeams = rankedTeams.filter((team) => getRiskLevel(calculateRiskScore(team)) !== "Normal");
+  const actionTeams = targetTeams.length ? targetTeams : rankedTeams.slice(0, 3);
+
+  return actionTeams.flatMap((team) => {
+    const questions = team.requiredQuestions.length ? team.requiredQuestions : [getPrimaryQuestion(team)];
+    return questions.map((question) => ({
+      team,
+      question,
+      criteria: getJudgmentCriteria(team),
+      action: getOperatorAction(team),
+    }));
+  });
 }
 
 function getHealthWatchItems(entries: ScrumEntry[], teams: Team[]) {
@@ -213,17 +229,27 @@ function formatDday(days: number): string {
 }
 
 export function OperatorActions({ teams }: { teams: Team[] }) {
+  const [page, setPage] = useState(0);
   const actions = getOperatorActionItems(teams);
+  const pageSize = 3;
+  const totalPages = Math.max(1, Math.ceil(actions.length / pageSize));
+  const currentPage = Math.min(page, totalPages - 1);
+  const startIndex = currentPage * pageSize;
+  const visibleActions = actions.slice(startIndex, startIndex + pageSize);
+
   return (
     <section className="panel action-panel">
       <div className="action-heading">
-        <div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 확인할 질문 TOP3</h2></div>
-        <span className="action-count">질문 → 판단 기준 → 후속 조치</span>
+        <div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 필수 확인 질문</h2></div>
+        <div className="action-meta">
+          <span className="action-count">총 {actions.length}개 · {startIndex + 1}-{Math.min(startIndex + pageSize, actions.length)}번</span>
+          <small>질문 → 판단 기준 → 후속 조치</small>
+        </div>
       </div>
       <ol>
-        {actions.map((item, index) => (
+        {visibleActions.map((item, index) => (
           <li key={`${item.team.teamId}-${item.question}`}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
+            <span>{String(startIndex + index + 1).padStart(2, "0")}</span>
             <div>
               <strong>{item.team.teamName}: {item.question}</strong>
               <p><b>판단 기준</b>{item.criteria}</p>
@@ -232,6 +258,13 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
           </li>
         ))}
       </ol>
+      {totalPages > 1 && (
+        <div className="action-pagination">
+          <button type="button" onClick={() => setPage((value) => Math.max(0, value - 1))} disabled={currentPage === 0}>이전 질문</button>
+          <span>{currentPage + 1} / {totalPages}</span>
+          <button type="button" onClick={() => setPage((value) => Math.min(totalPages - 1, value + 1))} disabled={currentPage === totalPages - 1}>다음 질문</button>
+        </div>
+      )}
     </section>
   );
 }
