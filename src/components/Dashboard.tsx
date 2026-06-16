@@ -128,6 +128,16 @@ function getOperatorActionItems(teams: Team[]) {
   });
 }
 
+function getTeamActionItems(team: Team) {
+  const questions = team.requiredQuestions.length ? team.requiredQuestions : [getPrimaryQuestion(team)];
+  return questions.map((question) => ({
+    team,
+    question,
+    criteria: getJudgmentCriteria(team),
+    action: getOperatorAction(team),
+  }));
+}
+
 function getHealthWatchItems(entries: ScrumEntry[], teams: Team[]) {
   return teams
     .filter((team) => team.healthRisk)
@@ -244,8 +254,12 @@ function formatDday(days: number): string {
 }
 
 export function OperatorActions({ teams }: { teams: Team[] }) {
+  const sortedTeams = [...teams].sort((a, b) => a.teamId - b.teamId);
+  const [selectedTeamId, setSelectedTeamId] = useState(sortedTeams[0]?.teamId ?? 1);
   const [page, setPage] = useState(0);
-  const actions = getOperatorActionItems(teams);
+  const selectedTeam = sortedTeams.find((team) => team.teamId === selectedTeamId) ?? sortedTeams[0];
+  const allActions = getOperatorActionItems(teams);
+  const actions = selectedTeam ? getTeamActionItems(selectedTeam) : [];
   const pageSize = 3;
   const totalPages = Math.max(1, Math.ceil(actions.length / pageSize));
   const currentPage = Math.min(page, totalPages - 1);
@@ -257,14 +271,36 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
       <div className="action-heading">
         <div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 필수 확인 질문</h2></div>
         <div className="action-meta">
-          <span className="action-count">총 {actions.length}개 · {startIndex + 1}-{Math.min(startIndex + pageSize, actions.length)}번</span>
+          <span className="action-count">총 {allActions.length}개 · {selectedTeam?.teamName ?? "팀"} {actions.length}개</span>
           <small>질문 → 판단 기준 → 후속 조치</small>
         </div>
       </div>
-      <ol>
+      <div className="action-team-tabs" role="tablist" aria-label="필수 확인 질문 팀 선택">
+        {sortedTeams.map((team) => {
+          const isSelected = team.teamId === selectedTeam?.teamId;
+          return (
+            <button
+              aria-controls="operator-action-list"
+              aria-selected={isSelected}
+              className={isSelected ? "active" : ""}
+              key={team.teamId}
+              onClick={() => {
+                setSelectedTeamId(team.teamId);
+                setPage(0);
+              }}
+              role="tab"
+              type="button"
+            >
+              <span>{team.teamName}</span>
+              <small>{team.requiredQuestions.length || 1}개</small>
+            </button>
+          );
+        })}
+      </div>
+      <ol id="operator-action-list" role="tabpanel" aria-label={`${selectedTeam?.teamName ?? "선택한 팀"} 필수 확인 질문`}>
         {visibleActions.map((item, index) => (
           <li key={`${item.team.teamId}-${item.question}`}>
-            <span>{String(startIndex + index + 1).padStart(2, "0")}</span>
+            <span>{String(index + 1 + startIndex).padStart(2, "0")}</span>
             <div>
               <strong>{item.team.teamName}: {item.question}</strong>
               <p><b>판단 기준</b>{item.criteria}</p>
