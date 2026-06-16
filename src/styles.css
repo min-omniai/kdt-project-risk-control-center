@@ -130,9 +130,15 @@ h1 { margin: 10px 0 7px; font-size: clamp(28px, 3vw, 40px); line-height: 1.2; le
 .rank-team { display: flex; align-items: center; gap: 16px; }.rank { color: #6e7681; font-family: monospace; font-size: 13px; }
 .rank-team div { display: grid; gap: 4px; }.rank-team strong { font-size: 17px; }.rank-team small { color: #8b949e; font-size: 12px; }
 .score { display: flex; align-items: center; gap: 9px; }.score > strong { font-size: 25px; }.risk-badge { display: inline-flex; padding: 4px 8px; border: 1px solid; border-radius: 999px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.reason { margin: 0; color: #c9d1d9; font-size: 14px; line-height: 1.5; }.risk-summary { display: grid; gap: 5px; min-width: 0; }
+.reason { margin: 0; color: #c9d1d9; font-size: 14px; line-height: 1.5; }.risk-summary { display: grid; gap: 8px; min-width: 0; }
 .risk-summary strong { color: #f0f6fc; font-size: 14px; line-height: 1.45; }
 .risk-summary small { display: -webkit-box; overflow: hidden; color: #8b949e; font-size: 12px; line-height: 1.45; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.risk-summary details { color: #8b949e; font-size: 12px; line-height: 1.45; }
+.risk-summary summary { width: fit-content; color: #58a6ff; cursor: pointer; font-weight: 800; }
+.risk-summary summary::marker { color: #58a6ff; }
+.risk-summary ul { display: grid; gap: 5px; margin: 7px 0 0; padding-left: 17px; }
+.risk-summary li { padding-left: 1px; }
+.risk-summary li::marker { color: #f85149; font-size: 10px; }
 .checklist { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; color: #8b949e; font-size: 13px; }
 .checklist li { display: flex; gap: 7px; }.checklist span { flex: 0 0 auto; width: 11px; height: 11px; margin-top: 2px; border: 1px solid #484f58; border-radius: 3px; }
 .scrum-history-panel { margin-bottom: 28px; overflow: hidden; }
@@ -212,7 +218,7 @@ footer { padding-top: 35px; color: #484f58; font-size: 11px; text-align: center;
   .action-panel, .ranking-panel, .teams-section, .two-column { margin-bottom: 24px; }
   .health-watch-heading { align-items: flex-start; flex-direction: column; gap: 0; }.health-watch-heading > span { margin: 0 17px 15px; }
   .action-team-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }.action-panel ol { grid-template-columns: 1fr; }.action-panel li { border-right: 0; border-bottom: 1px solid #30363d; }.action-heading { align-items: flex-start; gap: 10px; }
-  .timeline { overflow-x: auto; grid-template-columns: repeat(5, 145px); }.ranking-head { display: none; }.ranking-row { grid-template-columns: 1fr auto; gap: 10px; }.ranking-row .reason, .ranking-row .checklist { grid-column: 1 / -1; }
+  .timeline { overflow-x: auto; grid-template-columns: repeat(5, 145px); }.ranking-head { display: none; }.ranking-row { grid-template-columns: 1fr auto; gap: 10px; }.ranking-row .reason, .ranking-row .risk-summary, .ranking-row .checklist { grid-column: 1 / -1; }
   .scrum-toolbar { align-items: stretch; flex-direction: column; }.scrum-search { min-width: 0; }.scrum-team-tabs { flex-wrap: nowrap; overflow-x: auto; }.scrum-team-tabs button { flex: 1 0 78px; }
   .team-section-heading { align-items: stretch; flex-direction: column; gap: 0; }.company-tabs { overflow-x: auto; width: 100%; }.company-tabs button { flex: 1 0 105px; }.company-team-grid.team-count-2 { grid-template-columns: repeat(2, 1fr); }
 }

@@ -97,6 +97,13 @@ function getRiskEvidence(team: Team): string {
   return team.risks[1] || team.specialNotes[0] || team.status;
 }
 
+function getRiskDetails(team: Team): string[] {
+  return [...new Set([
+    ...team.risks.slice(1),
+    ...team.specialNotes,
+  ].filter(Boolean))];
+}
+
 function getJudgmentCriteria(team: Team): string {
   if (hasRiskSignal(team, "planningRisk")) return "CBT 필수 범위가 오늘 안에 잠기면 진행, 아니면 범위 축소";
   if (hasRiskSignal(team, "scheduleRisk")) return "다음 마일스톤까지 복구 일정과 담당자가 명확하면 진행";
@@ -347,13 +354,21 @@ export function RiskRanking({ teams }: { teams: Team[] }) {
       <div className="ranking-list">
         {sortTeamsByRisk(teams).map((team, index) => {
           const score = calculateRiskScore(team);
+          const riskDetails = getRiskDetails(team);
           return (
             <article className={`ranking-row ${index < 2 ? "priority" : ""}`} key={team.teamId}>
               <div className="rank-team"><b className="rank">{String(index + 1).padStart(2, "0")}</b><div><strong>{team.teamName}</strong><small>{team.company}</small></div></div>
               <div className="score"><strong style={{ color: getRiskColor(getRiskLevel(score)) }}>{score}</strong><RiskBadge score={score} /></div>
               <div className="risk-summary">
                 <strong>{getPrimaryRisk(team)}</strong>
-                <small>{getRiskEvidence(team)}</small>
+                {riskDetails.length > 0 && (
+                  <details>
+                    <summary>세부 리스크 {riskDetails.length}개</summary>
+                    <ul>
+                      {riskDetails.map((risk) => <li key={risk}>{risk}</li>)}
+                    </ul>
+                  </details>
+                )}
               </div>
               <ul className="checklist">
                 <li><span />{getPrimaryQuestion(team)}</li>
