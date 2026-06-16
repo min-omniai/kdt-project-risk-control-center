@@ -5,6 +5,7 @@ import {
   getDaysUntil,
   getRiskColor,
   getRiskLevel,
+  hasRiskSignal,
   sortTeamsByRisk,
 } from "../utils/risk";
 import { getKoreanWeekday } from "../utils/date";
@@ -93,20 +94,20 @@ function getPrimaryRisk(team: Team): string {
 }
 
 function getJudgmentCriteria(team: Team): string {
-  if (team.planningRisk) return "CBT 필수 범위가 오늘 안에 잠기면 진행, 아니면 범위 축소";
-  if (team.scheduleRisk) return "다음 마일스톤까지 복구 일정과 담당자가 명확하면 진행";
-  if (team.technicalRisk) return "플레이 가능한 빌드에서 핵심 루프가 검증되면 진행";
-  if (team.healthRisk) return "작업량 조정 후 핵심 담당 공백이 없으면 진행";
+  if (hasRiskSignal(team, "planningRisk")) return "CBT 필수 범위가 오늘 안에 잠기면 진행, 아니면 범위 축소";
+  if (hasRiskSignal(team, "scheduleRisk")) return "다음 마일스톤까지 복구 일정과 담당자가 명확하면 진행";
+  if (hasRiskSignal(team, "technicalRisk")) return "플레이 가능한 빌드에서 핵심 루프가 검증되면 진행";
+  if (hasRiskSignal(team, "healthRisk")) return "작업량 조정 후 핵심 담당 공백이 없으면 진행";
   if (team.checkinRate <= 60) return "미응답자가 확인되고 오늘 작업 로그가 채워지면 진행";
   return "오늘 완료 기준과 담당자가 명확하면 진행";
 }
 
 function getOperatorAction(team: Team): string {
-  if (team.planningRisk) return "기획 확정 회의 15분, 결정사항 문서화";
-  if (team.scheduleRisk) return "마감 복구표 작성 후 담당자 재배치";
-  if (team.technicalRisk) return "빌드/핵심 루프 시연으로 병목 확인";
-  if (team.healthRisk) return "컨디션 확인 후 업무량 조정";
-  if (team.collaborationRisk) return "담당 경계와 인수인계 항목 정리";
+  if (hasRiskSignal(team, "planningRisk")) return "기획 확정 회의 15분, 결정사항 문서화";
+  if (hasRiskSignal(team, "scheduleRisk")) return "마감 복구표 작성 후 담당자 재배치";
+  if (hasRiskSignal(team, "technicalRisk")) return "빌드/핵심 루프 시연으로 병목 확인";
+  if (hasRiskSignal(team, "healthRisk")) return "컨디션 확인 후 업무량 조정";
+  if (hasRiskSignal(team, "collaborationRisk")) return "담당 경계와 인수인계 항목 정리";
   if (team.checkinRate <= 60) return "미체크 인원에게 오늘 작업 로그 요청";
   return "현재 계획 유지, 다음 체크인만 확인";
 }
@@ -271,11 +272,11 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
 
 function getReasonSummary(team: Team): string {
   const flags = [
-    team.planningRisk && "기획 미확정",
-    team.scheduleRisk && "일정 지연",
-    team.technicalRisk && "기술 리스크",
-    team.healthRisk && "컨디션 이슈",
-    team.collaborationRisk && "협업 이슈",
+    hasRiskSignal(team, "planningRisk") && "기획 미확정",
+    hasRiskSignal(team, "scheduleRisk") && "일정 지연",
+    hasRiskSignal(team, "technicalRisk") && "기술 리스크",
+    hasRiskSignal(team, "healthRisk") && "컨디션 이슈",
+    hasRiskSignal(team, "collaborationRisk") && "협업 이슈",
   ].filter(Boolean);
   return flags.length ? flags.join(" · ") : team.risks[0] ?? "현재 주요 위험 없음";
 }
@@ -406,7 +407,7 @@ export function RiskBreakdown({ teams }: { teams: Team[] }) {
     <section className="panel breakdown-panel">
       <SectionTitle title="리스크 유형" subtitle="일정/기획/기술/컨디션/협업 신호" />
       <div className="category-list">{categories.map(({ key, label }) => {
-        const affected = teams.filter((team) => team[key]);
+        const affected = teams.filter((team) => hasRiskSignal(team, key));
         return <div className="category" key={key}><div><strong>{label}</strong><span>{affected.length}팀</span></div><ProgressBar value={(affected.length / teams.length) * 100} /><small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small></div>;
       })}</div>
     </section>

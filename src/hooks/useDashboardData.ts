@@ -86,8 +86,20 @@ export function useDashboardData(): DashboardDataState {
     });
 
     const liveTeams = [...latestByTeam.values()]
-      .map((row) => (row.payload as SyncedTeamPayload | null)?.dashboard)
-      .filter(isTeam)
+      .flatMap((row): Team[] => {
+        const payload = row.payload as SyncedTeamPayload | null;
+        if (!isTeam(payload?.dashboard)) return [];
+
+        return [{
+          ...payload.dashboard,
+          riskSourceText: [
+            payload.source?.briefing,
+            payload.source?.specialNotes,
+            payload.source?.operatorFeedback,
+            payload.source?.gptSummary,
+          ].filter(Boolean).join("\n"),
+        }];
+      })
       .sort((a, b) => a.teamId - b.teamId);
 
     const scrumEntries = [...latestByTeam.values()]

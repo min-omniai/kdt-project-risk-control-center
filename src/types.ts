@@ -28,6 +28,7 @@ export interface Team {
   risks: string[];
   specialNotes: string[];
   requiredQuestions: string[];
+  riskSourceText?: string;
   checkinHistory: {
     date: string;
     rate: number;
