@@ -98,6 +98,10 @@ h1 { margin: 10px 0 7px; font-size: clamp(28px, 3vw, 40px); line-height: 1.2; le
 .action-team-tabs button.active { color: #f0f6fc; border-color: rgba(248,81,73,.75); background: rgba(248,81,73,.1); box-shadow: inset 0 -2px #f85149; }
 .action-team-tabs span { overflow: hidden; font-size: 13px; font-weight: 900; text-overflow: ellipsis; white-space: nowrap; }
 .action-team-tabs small { flex: 0 0 auto; color: inherit; font-size: 10px; font-weight: 800; opacity: .75; }
+.action-team-summary { display: grid; grid-template-columns: 1.4fr auto 1fr; align-items: center; gap: 16px; margin: 0 16px 16px; padding: 13px 15px; border: 1px solid #30363d; border-radius: 9px; background: #0d111780; }
+.action-team-summary > div { display: grid; gap: 4px; min-width: 0; }.action-team-summary span { color: #8b949e; font-size: 11px; font-weight: 800; }.action-team-summary strong { overflow: hidden; color: #f0f6fc; font-size: 14px; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+.action-team-summary dl { display: flex; gap: 7px; margin: 0; }.action-team-summary dl div { min-width: 58px; padding: 7px 8px; border: 1px solid #21262d; border-radius: 7px; background: #161b22; }.action-team-summary dt { margin-bottom: 2px; color: #6e7681; font-size: 10px; font-weight: 900; }.action-team-summary dd { margin: 0; color: #c9d1d9; font-size: 14px; font-weight: 900; }
+.action-team-summary p { margin: 0; color: #c9d1d9; font-size: 13px; line-height: 1.45; }
 .action-panel ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0; padding: 0 16px 18px; list-style: none; }
 .action-panel li { display: grid; grid-template-columns: 34px 1fr; align-items: start; min-height: 184px; padding: 17px; border: 1px solid #30363d; border-radius: 10px; background: #0d111799; }
 .action-panel li:last-child { border: 0; }.action-panel li > span { color: #f85149; font-size: 13px; font-weight: 900; }
@@ -217,7 +221,7 @@ footer { padding-top: 35px; color: #484f58; font-size: 11px; text-align: center;
   .kpi-grid { grid-template-columns: repeat(2, 1fr); margin-bottom: 20px; }.kpi-card { min-height: 115px; }.dday-grid { grid-template-columns: repeat(2, 1fr); }
   .action-panel, .ranking-panel, .teams-section, .two-column { margin-bottom: 24px; }
   .health-watch-heading { align-items: flex-start; flex-direction: column; gap: 0; }.health-watch-heading > span { margin: 0 17px 15px; }
-  .action-team-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }.action-panel ol { grid-template-columns: 1fr; }.action-panel li { border-right: 0; border-bottom: 1px solid #30363d; }.action-heading { align-items: flex-start; gap: 10px; }
+  .action-team-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }.action-team-summary { grid-template-columns: 1fr; align-items: stretch; }.action-team-summary strong { white-space: normal; }.action-team-summary dl { flex-wrap: wrap; }.action-panel ol { grid-template-columns: 1fr; }.action-panel li { border-right: 0; border-bottom: 1px solid #30363d; }.action-heading { align-items: flex-start; gap: 10px; }
   .timeline { overflow-x: auto; grid-template-columns: repeat(5, 145px); }.ranking-head { display: none; }.ranking-row { grid-template-columns: 1fr auto; gap: 10px; }.ranking-row .reason, .ranking-row .risk-summary, .ranking-row .checklist { grid-column: 1 / -1; }
   .scrum-toolbar { align-items: stretch; flex-direction: column; }.scrum-search { min-width: 0; }.scrum-team-tabs { flex-wrap: nowrap; overflow-x: auto; }.scrum-team-tabs button { flex: 1 0 78px; }
   .team-section-heading { align-items: stretch; flex-direction: column; gap: 0; }.company-tabs { overflow-x: auto; width: 100%; }.company-tabs button { flex: 1 0 105px; }.company-team-grid.team-count-2 { grid-template-columns: repeat(2, 1fr); }

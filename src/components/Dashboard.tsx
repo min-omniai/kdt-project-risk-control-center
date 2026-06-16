@@ -123,6 +123,65 @@ function getOperatorAction(team: Team): string {
   return "현재 계획 유지, 다음 체크인만 확인";
 }
 
+function findContextText(team: Team, keywords: string[], fallback: string): string {
+  const texts = [...team.risks, ...team.specialNotes, team.status, ...team.goodPoints];
+  return texts.find((text) => keywords.some((keyword) => text.includes(keyword))) || fallback;
+}
+
+function getQuestionContext(team: Team, question: string) {
+  const baseRisk = getPrimaryRisk(team);
+  const planningKeywords = ["기획", "DB", "UI", "범위", "제외", "확정", "임시", "더미"];
+  const scheduleKeywords = ["수요일", "목~금", "금요일", "내일", "23일", "18일", "이번 주", "다음 주", "완성률", "완료", "마감"];
+  const technicalKeywords = ["Firestore", "Storage", "SO", "빌드", "버그", "스킬", "인챈트", "투사체", "인터페이스", "플레이 흐름", "시연", "프레임워크", "캡처"];
+  const collaborationKeywords = ["담당", "미배정", "팀원", "페어", "인수인계", "공유", "DM"];
+
+  if (hasHealthSignal(question)) {
+    return {
+      evidence: findContextText(team, healthKeywords, baseRisk),
+      criteria: "오늘 작업 지속 가능 여부와 대체 담당자가 확인되면 진행",
+      action: "컨디션 확인 후 업무량을 조정하고 공백 시 대체 투입 기준을 남김",
+    };
+  }
+
+  if (technicalKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, technicalKeywords, baseRisk),
+      criteria: "실제 빌드나 화면에서 재현·시연 가능한 상태면 진행",
+      action: "담당자와 오늘 닫을 기술 병목을 정하고 페어 디버깅 또는 빌드 시연으로 확인",
+    };
+  }
+
+  if (planningKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, planningKeywords, baseRisk),
+      criteria: "확정 대기 항목과 임시 진행 가능 항목이 분리되면 진행",
+      action: "15분 안에 결정자, 확정 시각, 임시 데이터 기준을 문서화",
+    };
+  }
+
+  if (scheduleKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, scheduleKeywords, baseRisk),
+      criteria: "완료 범위, 제외 범위, 담당자와 확인 시각이 명확하면 진행",
+      action: "오늘 종료 전 완료·이월 목록을 DM 또는 시트에 남김",
+    };
+  }
+
+  if (collaborationKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, collaborationKeywords, baseRisk),
+      criteria: "담당 경계와 인수인계 대상이 한 문장으로 정리되면 진행",
+      action: "담당자별 다음 작업과 공유 위치를 확정하고 운영진에게 갱신",
+    };
+  }
+
+  return {
+    evidence: baseRisk,
+    criteria: getJudgmentCriteria(team),
+    action: getOperatorAction(team),
+  };
+}
+
 function getOperatorActionItems(teams: Team[]) {
   const rankedTeams = sortTeamsByRisk(teams);
   const targetTeams = rankedTeams.filter((team) => getRiskLevel(calculateRiskScore(team)) !== "Normal");
@@ -130,23 +189,13 @@ function getOperatorActionItems(teams: Team[]) {
 
   return actionTeams.flatMap((team) => {
     const questions = team.requiredQuestions.length ? team.requiredQuestions : [getPrimaryQuestion(team)];
-    return questions.map((question) => ({
-      team,
-      question,
-      criteria: getJudgmentCriteria(team),
-      action: getOperatorAction(team),
-    }));
+    return questions.map((question) => ({ team, question, ...getQuestionContext(team, question) }));
   });
 }
 
 function getTeamActionItems(team: Team) {
   const questions = team.requiredQuestions.length ? team.requiredQuestions : [getPrimaryQuestion(team)];
-  return questions.map((question) => ({
-    team,
-    question,
-    criteria: getJudgmentCriteria(team),
-    action: getOperatorAction(team),
-  }));
+  return questions.map((question) => ({ team, question, ...getQuestionContext(team, question) }));
 }
 
 function getHealthWatchItems(entries: ScrumEntry[], teams: Team[]) {
@@ -279,6 +328,7 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
   const currentPage = Math.min(page, totalPages - 1);
   const startIndex = currentPage * pageSize;
   const visibleActions = actions.slice(startIndex, startIndex + pageSize);
+  const selectedTeamScore = selectedTeam ? calculateRiskScore(selectedTeam) : 0;
 
   return (
     <section className="panel action-panel">
@@ -286,7 +336,7 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
         <div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 필수 확인 질문</h2></div>
         <div className="action-meta">
           <span className="action-count">총 {totalQuestionCount}개 · {selectedTeam?.teamName ?? "팀"} {actions.length}개</span>
-          <small>질문 → 판단 기준 → 후속 조치</small>
+          <small>질문 → 확인 근거 → 판단 기준 → 후속 조치</small>
         </div>
       </div>
       <div className="action-team-tabs" role="tablist" aria-label="필수 확인 질문 팀 선택">
@@ -311,13 +361,27 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
           );
         })}
       </div>
+      {selectedTeam && (
+        <div className="action-team-summary">
+          <div>
+            <span>{selectedTeam.company} · {selectedTeam.teamName}</span>
+            <strong>{selectedTeam.status}</strong>
+          </div>
+          <dl>
+            <div><dt>위험</dt><dd style={{ color: getRiskColor(getRiskLevel(selectedTeamScore)) }}>{selectedTeamScore}</dd></div>
+            <div><dt>진척</dt><dd>{selectedTeam.progress}%</dd></div>
+            <div><dt>체크인</dt><dd>{selectedTeam.checkinRate}%</dd></div>
+          </dl>
+          <p>{getPrimaryRisk(selectedTeam)}</p>
+        </div>
+      )}
       <ol id="operator-action-list" role="tabpanel" aria-label={`${selectedTeam?.teamName ?? "선택한 팀"} 필수 확인 질문`}>
         {visibleActions.map((item, index) => (
           <li key={`${item.team.teamId}-${item.question}`}>
             <span>{String(index + 1 + startIndex).padStart(2, "0")}</span>
             <div>
-              <strong>{item.team.teamName}: {item.question}</strong>
-              <p><b>확인 근거</b>{getPrimaryRisk(item.team)}</p>
+              <strong>{item.question}</strong>
+              <p><b>확인 근거</b>{item.evidence}</p>
               <p><b>판단 기준</b>{item.criteria}</p>
               <p><b>후속 조치</b>{item.action}</p>
             </div>
