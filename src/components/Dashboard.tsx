@@ -17,8 +17,8 @@ export function DashboardHeader({ today }: { today: string }) {
     <header className="dashboard-header">
       <div>
         <div className="eyebrow"><span className="live-dot" /> PROJECT CONTROL CENTER</div>
-        <h1>오늘, 어떤 팀을 먼저 관리해야 할까요?</h1>
-        <p>기업협약 프로젝트 · 위험 신호를 우선순위와 실행 항목으로 전환합니다.</p>
+        <h1>오늘 먼저 볼 팀을 바로 고르세요</h1>
+        <p>진척, 체크인, 피드백을 운영 우선순위와 확인 질문으로 정리합니다.</p>
       </div>
       <div className="date-box"><span>기준일</span><strong>{formatted}</strong><small>{weekday}</small></div>
     </header>
@@ -41,16 +41,16 @@ export function DataSourceSummary({
   error: string;
 }) {
   const syncLabel = isLoading
-    ? "Supabase 최신 데이터 확인 중"
+    ? "최신 데이터 확인 중"
     : sourceMode === "live"
-      ? "Google Sheets 자동 동기화"
-      : "Google Sheets 분석 스냅샷";
+      ? "Sheets 동기화 데이터"
+      : "기본 스냅샷 데이터";
 
   return (
     <section className={`source-summary ${error ? "source-warning" : ""}`}>
       <div><span className="source-status" /> {syncLabel}</div>
       <p>{sources.join(" + ")}</p>
-      <small>{error || `동기화 ${updatedAt} · 체크인 ${checkinUpdatedThrough}까지 반영`}</small>
+      <small>{error || `동기화 ${updatedAt} · 체크인 ${checkinUpdatedThrough}까지`}</small>
     </section>
   );
 }
@@ -110,8 +110,8 @@ export function HealthWatch({ entries, teams }: { entries: ScrumEntry[]; teams: 
     <section className="panel health-watch-panel">
       <div className="health-watch-heading">
         <SectionTitle
-          title="컨디션 주의 상세"
-          subtitle="건강·피로·과부하 신호가 있는 팀과 학습자를 바로 확인합니다"
+          title="컨디션 주의 대상"
+          subtitle="건강, 피로, 과부하 신호가 있는 팀과 학습자"
         />
         <span>{watchItems.length}건 확인</span>
       </div>
@@ -176,8 +176,8 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
   const actions = getRecommendedActions(teams);
   return (
     <section className="panel action-panel">
-      <div className="action-heading"><div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘의 운영자 액션</h2></div><span className="action-count">{actions.length}개 우선 확인</span></div>
-      <ol>{actions.map((action, index) => <li key={action}><span>{String(index + 1).padStart(2, "0")}</span><p>{action}</p><b>확인 필요 →</b></li>)}</ol>
+      <div className="action-heading"><div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 확인할 질문</h2></div><span className="action-count">{actions.length}개 우선 처리</span></div>
+      <ol>{actions.map((action, index) => <li key={action}><span>{String(index + 1).padStart(2, "0")}</span><p>{action}</p><b>운영 확인</b></li>)}</ol>
     </section>
   );
 }
@@ -190,14 +190,14 @@ function getReasonSummary(team: Team): string {
     team.healthRisk && "컨디션 이슈",
     team.collaborationRisk && "협업 이슈",
   ].filter(Boolean);
-  return flags.length ? flags.join(" · ") : team.risks[0] ?? "특이 위험 없음";
+  return flags.length ? flags.join(" · ") : team.risks[0] ?? "현재 주요 위험 없음";
 }
 
 export function RiskRanking({ teams }: { teams: Team[] }) {
   return (
     <section className="panel ranking-panel">
-      <SectionTitle title="위험 우선순위" subtitle="시트 분석 위험 점수 내림차순 · 가장 먼저 개입할 팀" />
-      <div className="ranking-head"><span>순위 / 팀</span><span>점수</span><span>핵심 사유</span><span>운영자 체크리스트</span></div>
+      <SectionTitle title="위험 우선순위" subtitle="오늘 먼저 개입할 팀을 위험 점수순으로 정렬했습니다" />
+      <div className="ranking-head"><span>순위 / 팀</span><span>위험</span><span>왜 위험한가</span><span>바로 확인할 질문</span></div>
       <div className="ranking-list">
         {sortTeamsByRisk(teams).map((team, index) => {
           const score = calculateRiskScore(team);
@@ -229,7 +229,7 @@ export function ScrumHistory({ entries, teams }: { entries: ScrumEntry[]; teams:
   return (
     <section className="panel scrum-history-panel">
       <SectionTitle
-        title="데일리 스크럼 히스토리"
+        title="최근 3일 스크럼 히스토리"
         subtitle="팀별 학습자 작업 기록을 날짜 내림차순으로 확인합니다"
       />
       <div className="scrum-toolbar">
@@ -313,10 +313,10 @@ const categories: { key: RiskKey; label: string }[] = [
 export function RiskBreakdown({ teams }: { teams: Team[] }) {
   return (
     <section className="panel breakdown-panel">
-      <SectionTitle title="리스크 카테고리" subtitle="유형별 영향 팀 현황" />
+      <SectionTitle title="리스크 유형" subtitle="어떤 문제가 많이 겹치는지 확인합니다" />
       <div className="category-list">{categories.map(({ key, label }) => {
         const affected = teams.filter((team) => team[key]);
-        return <div className="category" key={key}><div><strong>{label} 리스크</strong><span>{affected.length}개 팀</span></div><ProgressBar value={(affected.length / teams.length) * 100} /><small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small></div>;
+        return <div className="category" key={key}><div><strong>{label}</strong><span>{affected.length}팀</span></div><ProgressBar value={(affected.length / teams.length) * 100} /><small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small></div>;
       })}</div>
     </section>
   );
@@ -356,7 +356,7 @@ export function TeamStatusTabs({ teams }: { teams: Team[] }) {
       <div className="team-section-heading">
         <SectionTitle
           title="팀 상세 현황"
-          subtitle="브리핑·운영진 피드백·GPT 종합 피드백을 교차 분석한 기업별 팀 현황"
+          subtitle="기업별로 현재 상태, 강점, 위험, 확인 질문을 봅니다"
         />
         <div className="company-tabs" role="tablist" aria-label="기업별 팀 선택">
           {companies.map((company) => {
