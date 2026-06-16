@@ -3,7 +3,6 @@ import type { Milestone, RiskKey, ScrumEntry, Team } from "../types";
 import {
   calculateRiskScore,
   getDaysUntil,
-  getRecommendedActions,
   getRiskColor,
   getRiskLevel,
   sortTeamsByRisk,
@@ -13,12 +12,13 @@ import { getKoreanWeekday } from "../utils/date";
 export function DashboardHeader({ today }: { today: string }) {
   const formatted = today.replaceAll("-", ". ");
   const weekday = getKoreanWeekday(today);
+
   return (
     <header className="dashboard-header">
       <div>
-        <div className="eyebrow"><span className="live-dot" /> PROJECT CONTROL CENTER</div>
-        <h1>오늘 먼저 볼 팀을 바로 고르세요</h1>
-        <p>진척, 체크인, 피드백을 운영 우선순위와 확인 질문으로 정리합니다.</p>
+        <div className="eyebrow"><span className="live-dot" /> OPERATIONS CONTROL</div>
+        <h1>운영진 팀 관리 센터</h1>
+        <p>오늘 개입할 팀, 확인 질문, 후속 조치를 30초 안에 정리합니다.</p>
       </div>
       <div className="date-box"><span>기준일</span><strong>{formatted}</strong><small>{weekday}</small></div>
     </header>
@@ -43,8 +43,8 @@ export function DataSourceSummary({
   const syncLabel = isLoading
     ? "최신 데이터 확인 중"
     : sourceMode === "live"
-      ? "Sheets 동기화 데이터"
-      : "기본 스냅샷 데이터";
+      ? "Sheets 동기화 완료"
+      : "기본 스냅샷 표시";
 
   return (
     <section className={`source-summary ${error ? "source-warning" : ""}`}>
@@ -55,7 +55,17 @@ export function DataSourceSummary({
   );
 }
 
-export function KpiCard({ label, value, hint, tone = "default" }: { label: string; value: string | number; hint: string; tone?: string }) {
+export function KpiCard({
+  label,
+  value,
+  hint,
+  tone = "default",
+}: {
+  label: string;
+  value: string | number;
+  hint: string;
+  tone?: string;
+}) {
   return <article className={`kpi-card ${tone}`}><span>{label}</span><strong>{value}</strong><small>{hint}</small></article>;
 }
 
@@ -65,16 +75,44 @@ function hasHealthSignal(text: string): boolean {
   return healthKeywords.some((keyword) => text.includes(keyword));
 }
 
-function healthQuestionFor(team: Team): string {
-  return (
-    team.requiredQuestions.find((question) => hasHealthSignal(question)) ||
-    team.requiredQuestions[0] ||
-    "오늘 작업량 조정이나 역할 재분배가 필요한가?"
-  );
+function getPrimaryQuestion(team: Team): string {
+  return team.requiredQuestions[0] || "오늘 막힌 작업과 다음 마감 기준을 확인했는가?";
 }
 
-export function HealthWatch({ entries, teams }: { entries: ScrumEntry[]; teams: Team[] }) {
-  const watchItems = teams
+function getPrimaryRisk(team: Team): string {
+  return team.risks[0] || getReasonSummary(team);
+}
+
+function getJudgmentCriteria(team: Team): string {
+  if (team.planningRisk) return "CBT 필수 범위가 오늘 안에 잠기면 진행, 아니면 범위 축소";
+  if (team.scheduleRisk) return "다음 마일스톤까지 복구 일정과 담당자가 명확하면 진행";
+  if (team.technicalRisk) return "플레이 가능한 빌드에서 핵심 루프가 검증되면 진행";
+  if (team.healthRisk) return "작업량 조정 후 핵심 담당 공백이 없으면 진행";
+  if (team.checkinRate <= 60) return "미응답자가 확인되고 오늘 작업 로그가 채워지면 진행";
+  return "오늘 완료 기준과 담당자가 명확하면 진행";
+}
+
+function getOperatorAction(team: Team): string {
+  if (team.planningRisk) return "기획 확정 회의 15분, 결정사항 문서화";
+  if (team.scheduleRisk) return "마감 복구표 작성 후 담당자 재배치";
+  if (team.technicalRisk) return "빌드/핵심 루프 시연으로 병목 확인";
+  if (team.healthRisk) return "컨디션 확인 후 업무량 조정";
+  if (team.collaborationRisk) return "담당 경계와 인수인계 항목 정리";
+  if (team.checkinRate <= 60) return "미체크 인원에게 오늘 작업 로그 요청";
+  return "현재 계획 유지, 다음 체크인만 확인";
+}
+
+function getOperatorActionItems(teams: Team[]) {
+  return sortTeamsByRisk(teams).slice(0, 3).map((team) => ({
+    team,
+    question: getPrimaryQuestion(team),
+    criteria: getJudgmentCriteria(team),
+    action: getOperatorAction(team),
+  }));
+}
+
+function getHealthWatchItems(entries: ScrumEntry[], teams: Team[]) {
+  return teams
     .filter((team) => team.healthRisk)
     .map((team) => {
       const learnerSignals = entries
@@ -82,60 +120,45 @@ export function HealthWatch({ entries, teams }: { entries: ScrumEntry[]; teams: 
         .filter((entry) => hasHealthSignal([entry.workload, entry.comment, entry.note, entry.status].join(" ")))
         .sort((a, b) => b.date.localeCompare(a.date));
 
-      if (learnerSignals.length) {
-        return learnerSignals.slice(0, 3).map((entry) => ({
-          key: `${team.teamId}-${entry.learnerName}-${entry.date}`,
-          company: team.company,
-          teamName: team.teamName,
-          learnerName: entry.learnerName,
-          date: entry.date,
-          signal: [entry.note, entry.comment, entry.status].filter(Boolean).join(" · ") || entry.workload,
-          question: healthQuestionFor(team),
-        }));
-      }
+      return {
+        team,
+        learnerSignals,
+        summary: [...team.specialNotes, ...team.risks].find(hasHealthSignal) || team.status,
+      };
+    });
+}
 
-      return [{
-        key: `${team.teamId}-team`,
-        company: team.company,
-        teamName: team.teamName,
-        learnerName: "팀 단위 확인",
-        date: "최신 종합 피드백",
-        signal: [...team.specialNotes, ...team.risks].find(hasHealthSignal) || team.status,
-        question: healthQuestionFor(team),
-      }];
-    })
-    .flat();
+export function HealthWatch({ entries, teams }: { entries: ScrumEntry[]; teams: Team[] }) {
+  const watchItems = getHealthWatchItems(entries, teams);
 
   return (
-    <section className="panel health-watch-panel">
-      <div className="health-watch-heading">
-        <SectionTitle
-          title="컨디션 주의 대상"
-          subtitle="건강, 피로, 과부하 신호가 있는 팀과 학습자"
-        />
-        <span>{watchItems.length}건 확인</span>
+    <section className="health-compact">
+      <div className="health-compact-summary">
+        <strong>컨디션 주의</strong>
+        <span>{watchItems.length}팀</span>
+        <small>{watchItems.map((item) => item.team.teamName).join(", ") || "해당 없음"}</small>
       </div>
-      {watchItems.length === 0 ? (
-        <div className="health-empty">현재 컨디션 주의 신호가 등록된 팀은 없습니다.</div>
-      ) : (
-        <div className="health-watch-list">
-          {watchItems.map((item) => (
-            <article className="health-watch-item" key={item.key}>
-              <div className="health-watch-top">
-                <div>
-                  <strong>{item.teamName}</strong>
-                  <small>{item.company}</small>
-                </div>
-                <b>{item.learnerName}</b>
-              </div>
-              <p>{item.signal}</p>
-              <div className="health-watch-bottom">
-                <span>{item.date}</span>
-                <em>{item.question}</em>
-              </div>
-            </article>
-          ))}
-        </div>
+      {watchItems.length > 0 && (
+        <details className="health-detail">
+          <summary>개인 상세 보기</summary>
+          <div className="health-detail-list">
+            {watchItems.map(({ team, learnerSignals, summary }) => (
+              <article key={team.teamId}>
+                <b>{team.teamName}</b>
+                {learnerSignals.length ? (
+                  learnerSignals.slice(0, 3).map((entry) => (
+                    <p key={`${entry.learnerName}-${entry.date}`}>
+                      <span>{entry.learnerName}</span>
+                      {entry.date} · {[entry.note, entry.comment, entry.status].filter(Boolean).join(" · ") || entry.workload}
+                    </p>
+                  ))
+                ) : (
+                  <p><span>팀 단위</span>{summary}</p>
+                )}
+              </article>
+            ))}
+          </div>
+        </details>
       )}
     </section>
   );
@@ -152,18 +175,29 @@ export function ProgressBar({ value, kind = "progress" }: { value: number; kind?
 }
 
 export function MilestoneTimeline({ milestones, today }: { milestones: Milestone[]; today: string }) {
+  const upcoming = milestones.filter((item) => item.status === "upcoming");
+
   return (
     <section className="panel timeline-panel">
-      <SectionTitle title="마일스톤 타임라인" subtitle="현재 프로젝트의 주요 게이트와 남은 시간" />
+      <SectionTitle title="마일스톤" subtitle="다가오는 마감과 전체 일정" />
+      <div className="dday-grid milestone-dday-grid">
+        {upcoming.map((item) => (
+          <div className="dday-card" key={item.name}>
+            <span>{item.name}</span>
+            <strong>{formatDday(getDaysUntil(item.date, today))}</strong>
+            <small>{item.date.replaceAll("-", ".")}</small>
+          </div>
+        ))}
+      </div>
       <div className="timeline">
         {milestones.map((item, index) => {
           const days = getDaysUntil(item.date, today);
-          const isCurrent = index === 1;
+          const isCurrent = item.status !== "completed" && index === milestones.findIndex((milestone) => milestone.status !== "completed");
           return (
             <div className={`milestone ${item.status} ${isCurrent ? "current" : ""}`} key={item.name}>
               <div className="milestone-top"><span className="milestone-dot">{item.status === "completed" ? "✓" : index + 1}</span><span className="timeline-line" /></div>
               <strong>{item.name}</strong><small>{item.date.replaceAll("-", ". ")}</small>
-              <em>{days < 0 ? `D+${Math.abs(days)}` : days === 0 ? "D-DAY" : `D-${days}`}</em>
+              <em>{formatDday(days)}</em>
             </div>
           );
         })}
@@ -172,12 +206,32 @@ export function MilestoneTimeline({ milestones, today }: { milestones: Milestone
   );
 }
 
+function formatDday(days: number): string {
+  if (days < 0) return `D+${Math.abs(days)}`;
+  if (days === 0) return "D-DAY";
+  return `D-${days}`;
+}
+
 export function OperatorActions({ teams }: { teams: Team[] }) {
-  const actions = getRecommendedActions(teams);
+  const actions = getOperatorActionItems(teams);
   return (
     <section className="panel action-panel">
-      <div className="action-heading"><div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 확인할 질문</h2></div><span className="action-count">{actions.length}개 우선 처리</span></div>
-      <ol>{actions.map((action, index) => <li key={action}><span>{String(index + 1).padStart(2, "0")}</span><p>{action}</p><b>운영 확인</b></li>)}</ol>
+      <div className="action-heading">
+        <div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 확인할 질문 TOP3</h2></div>
+        <span className="action-count">질문 → 판단 기준 → 후속 조치</span>
+      </div>
+      <ol>
+        {actions.map((item, index) => (
+          <li key={`${item.team.teamId}-${item.question}`}>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <div>
+              <strong>{item.team.teamName}: {item.question}</strong>
+              <p><b>판단 기준</b>{item.criteria}</p>
+              <p><b>후속 조치</b>{item.action}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
@@ -196,8 +250,8 @@ function getReasonSummary(team: Team): string {
 export function RiskRanking({ teams }: { teams: Team[] }) {
   return (
     <section className="panel ranking-panel">
-      <SectionTitle title="위험 우선순위" subtitle="오늘 먼저 개입할 팀을 위험 점수순으로 정렬했습니다" />
-      <div className="ranking-head"><span>순위 / 팀</span><span>위험</span><span>왜 위험한가</span><span>바로 확인할 질문</span></div>
+      <SectionTitle title="위험 우선순위" subtitle="팀 / 점수 / 핵심 리스크 / 확인 질문 / 액션" />
+      <div className="ranking-head"><span>팀</span><span>위험</span><span>핵심 리스크</span><span>확인 질문 / 액션</span></div>
       <div className="ranking-list">
         {sortTeamsByRisk(teams).map((team, index) => {
           const score = calculateRiskScore(team);
@@ -206,7 +260,10 @@ export function RiskRanking({ teams }: { teams: Team[] }) {
               <div className="rank-team"><b className="rank">{String(index + 1).padStart(2, "0")}</b><div><strong>{team.teamName}</strong><small>{team.company}</small></div></div>
               <div className="score"><strong style={{ color: getRiskColor(getRiskLevel(score)) }}>{score}</strong><RiskBadge score={score} /></div>
               <p className="reason">{getReasonSummary(team)}</p>
-              <ul className="checklist">{team.requiredQuestions.slice(0, 2).map((q) => <li key={q}><span />{q}</li>)}</ul>
+              <ul className="checklist">
+                <li><span />{getPrimaryQuestion(team)}</li>
+                <li><span />{getOperatorAction(team)}</li>
+              </ul>
             </article>
           );
         })}
@@ -216,7 +273,7 @@ export function RiskRanking({ teams }: { teams: Team[] }) {
 }
 
 export function ScrumHistory({ entries, teams }: { entries: ScrumEntry[]; teams: Team[] }) {
-  const [selectedTeamId, setSelectedTeamId] = useState(1);
+  const [selectedTeamId, setSelectedTeamId] = useState(teams[0]?.teamId ?? 1);
   const [searchTerm, setSearchTerm] = useState("");
   const selectedTeam = teams.find((team) => team.teamId === selectedTeamId) ?? teams[0];
   const teamEntries = entries
@@ -227,7 +284,7 @@ export function ScrumHistory({ entries, teams }: { entries: ScrumEntry[]; teams:
     .sort((a, b) => a.localeCompare(b, "ko"));
 
   return (
-    <section className="panel scrum-history-panel">
+    <section className="scrum-history-panel">
       <SectionTitle
         title="최근 3일 스크럼 히스토리"
         subtitle="팀별 학습자 작업 기록을 날짜 내림차순으로 확인합니다"
@@ -261,8 +318,7 @@ export function ScrumHistory({ entries, teams }: { entries: ScrumEntry[]; teams:
 
       {teamEntries.length === 0 ? (
         <div className="scrum-empty">
-          아직 학습자별 스크럼 히스토리가 동기화되지 않았습니다. 최신 Apps Script의
-          syncProjectRiskData를 한 번 실행하면 표시됩니다.
+          아직 학습자별 스크럼 히스토리가 동기화되지 않았습니다. 최신 Apps Script의 syncProjectRiskData를 한 번 실행하면 표시됩니다.
         </div>
       ) : learnerNames.length === 0 ? (
         <div className="scrum-empty">검색 조건에 맞는 학습자가 없습니다.</div>
@@ -305,15 +361,17 @@ export function ScrumHistory({ entries, teams }: { entries: ScrumEntry[]; teams:
 }
 
 const categories: { key: RiskKey; label: string }[] = [
-  { key: "scheduleRisk", label: "일정" }, { key: "planningRisk", label: "기획" },
-  { key: "technicalRisk", label: "기술" }, { key: "healthRisk", label: "컨디션" },
+  { key: "scheduleRisk", label: "일정" },
+  { key: "planningRisk", label: "기획" },
+  { key: "technicalRisk", label: "기술" },
+  { key: "healthRisk", label: "컨디션" },
   { key: "collaborationRisk", label: "협업" },
 ];
 
 export function RiskBreakdown({ teams }: { teams: Team[] }) {
   return (
     <section className="panel breakdown-panel">
-      <SectionTitle title="리스크 유형" subtitle="어떤 문제가 많이 겹치는지 확인합니다" />
+      <SectionTitle title="리스크 유형" subtitle="일정/기획/기술/컨디션/협업 신호" />
       <div className="category-list">{categories.map(({ key, label }) => {
         const affected = teams.filter((team) => team[key]);
         return <div className="category" key={key}><div><strong>{label}</strong><span>{affected.length}팀</span></div><ProgressBar value={(affected.length / teams.length) * 100} /><small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small></div>;
@@ -324,23 +382,32 @@ export function RiskBreakdown({ teams }: { teams: Team[] }) {
 
 export function TeamCard({ team }: { team: Team }) {
   const score = calculateRiskScore(team);
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <article className="team-card">
-      <header><div><span>{team.company}</span><h3>{team.teamName}</h3></div><div className="team-score"><strong>{score}</strong><RiskBadge score={score} /></div></header>
-      <div className="status-line"><span className="status-dot" style={{ background: getRiskColor(getRiskLevel(score)) }} />{team.status}</div>
-      <div className="metric"><div><span>운영 추정 진척도</span><b>{team.progress}%</b></div><ProgressBar value={team.progress} /></div>
-      <div className="metric"><div><span>최신 체크인</span><b>{team.checkinRate}%</b></div><ProgressBar value={team.checkinRate} kind="checkin" /></div>
-      <div className="checkin-history">
-        {team.checkinHistory.map((item) => (
-          <div key={item.date}><span>{item.date}</span><b>{item.rate}%</b></div>
-        ))}
+    <article className="team-card compact-team-card">
+      <header>
+        <div><span>{team.company}</span><h3>{team.teamName}</h3></div>
+        <div className="team-score"><strong>{score}</strong><RiskBadge score={score} /></div>
+      </header>
+      <div className="team-card-lines">
+        <p><b>상태</b><span>{team.status}</span></p>
+        <p><b>핵심 리스크</b><span>{getPrimaryRisk(team)}</span></p>
+        <p><b>오늘 질문</b><span>{getPrimaryQuestion(team)}</span></p>
+        <p><b>운영 액션</b><span>{getOperatorAction(team)}</span></p>
+        <p><b>상세 보기</b><button type="button" onClick={() => setIsOpen((value) => !value)}>{isOpen ? "접기" : "열기"}</button></p>
       </div>
-      <div className="team-details">
-        <DetailBlock label="GOOD" items={team.goodPoints} className="good" />
-        <DetailBlock label="RISK" items={team.risks.length ? team.risks : ["현재 등록된 위험 없음"]} className="risk" />
-        {team.specialNotes.length > 0 && <DetailBlock label="NOTE" items={team.specialNotes} className="note" />}
-      </div>
-      <div className="questions"><strong>필수 확인 질문</strong>{team.requiredQuestions.map((q) => <p key={q}><span>?</span>{q}</p>)}</div>
+      {isOpen && (
+        <div className="team-card-detail">
+          <div className="metric"><div><span>운영 추정 진척도</span><b>{team.progress}%</b></div><ProgressBar value={team.progress} /></div>
+          <div className="metric"><div><span>최신 체크인</span><b>{team.checkinRate}%</b></div><ProgressBar value={team.checkinRate} kind="checkin" /></div>
+          <div className="team-details">
+            <DetailBlock label="GOOD" items={team.goodPoints} className="good" />
+            <DetailBlock label="RISK" items={team.risks.length ? team.risks : ["현재 등록된 위험 없음"]} className="risk" />
+            {team.specialNotes.length > 0 && <DetailBlock label="NOTE" items={team.specialNotes} className="note" />}
+          </div>
+        </div>
+      )}
     </article>
   );
 }
@@ -356,7 +423,7 @@ export function TeamStatusTabs({ teams }: { teams: Team[] }) {
       <div className="team-section-heading">
         <SectionTitle
           title="팀 상세 현황"
-          subtitle="기업별로 현재 상태, 강점, 위험, 확인 질문을 봅니다"
+          subtitle="상태 / 핵심 리스크 / 오늘 질문 / 운영 액션 / 상세 보기"
         />
         <div className="company-tabs" role="tablist" aria-label="기업별 팀 선택">
           {companies.map((company) => {
@@ -387,6 +454,16 @@ export function TeamStatusTabs({ teams }: { teams: Team[] }) {
       >
         {visibleTeams.map((team) => <TeamCard team={team} key={team.teamId} />)}
       </div>
+    </section>
+  );
+}
+
+export function DetailLogs({ entries, teams }: { entries: ScrumEntry[]; teams: Team[] }) {
+  return (
+    <section className="panel detail-logs-panel">
+      <SectionTitle title="상세 로그" subtitle="컨디션 / 최근 3일 스크럼 / 학습자별 기록" />
+      <HealthWatch entries={entries} teams={teams} />
+      <ScrumHistory entries={entries} teams={teams} />
     </section>
   );
 }
