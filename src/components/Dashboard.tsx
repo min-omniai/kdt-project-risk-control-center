@@ -186,8 +186,22 @@ export function RiskBadge({ score }: { score: number }) {
   return <span className="risk-badge" style={{ color: getRiskColor(level), borderColor: `${getRiskColor(level)}66`, background: `${getRiskColor(level)}18` }}>{level}</span>;
 }
 
-export function ProgressBar({ value, kind = "progress" }: { value: number; kind?: "progress" | "checkin" }) {
-  const color = value < 60 ? "#f85149" : value < 75 ? "#d29922" : kind === "checkin" ? "#58a6ff" : "#3fb950";
+export function ProgressBar({ value, kind = "progress" }: { value: number; kind?: "progress" | "checkin" | "risk-density" }) {
+  const color = kind === "risk-density"
+    ? value <= 25
+      ? "#3fb950"
+      : value <= 50
+        ? "#d29922"
+        : value < 75
+          ? "#fb8500"
+          : "#f85149"
+    : value < 60
+      ? "#f85149"
+      : value < 75
+        ? "#d29922"
+        : kind === "checkin"
+          ? "#58a6ff"
+          : "#3fb950";
   return <div className="bar-track"><span style={{ width: `${value}%`, background: color }} /></div>;
 }
 
@@ -408,7 +422,7 @@ export function RiskBreakdown({ teams }: { teams: Team[] }) {
       <SectionTitle title="리스크 유형" subtitle="일정/기획/기술/컨디션/협업 신호" />
       <div className="category-list">{categories.map(({ key, label }) => {
         const affected = teams.filter((team) => hasRiskSignal(team, key));
-        return <div className="category" key={key}><div><strong>{label}</strong><span>{affected.length}팀</span></div><ProgressBar value={(affected.length / teams.length) * 100} /><small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small></div>;
+        return <div className="category" key={key}><div><strong>{label}</strong><span>{affected.length}팀</span></div><ProgressBar value={(affected.length / teams.length) * 100} kind="risk-density" /><small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small></div>;
       })}</div>
     </section>
   );
