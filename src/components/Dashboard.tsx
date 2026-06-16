@@ -93,6 +93,10 @@ function getPrimaryRisk(team: Team): string {
   return team.risks[0] || getReasonSummary(team);
 }
 
+function getRiskEvidence(team: Team): string {
+  return team.risks[1] || team.specialNotes[0] || team.status;
+}
+
 function getJudgmentCriteria(team: Team): string {
   if (hasRiskSignal(team, "planningRisk")) return "CBT 필수 범위가 오늘 안에 잠기면 진행, 아니면 범위 축소";
   if (hasRiskSignal(team, "scheduleRisk")) return "다음 마일스톤까지 복구 일정과 담당자가 명확하면 진행";
@@ -306,6 +310,7 @@ export function OperatorActions({ teams }: { teams: Team[] }) {
             <span>{String(index + 1 + startIndex).padStart(2, "0")}</span>
             <div>
               <strong>{item.team.teamName}: {item.question}</strong>
+              <p><b>확인 근거</b>{getPrimaryRisk(item.team)}</p>
               <p><b>판단 기준</b>{item.criteria}</p>
               <p><b>후속 조치</b>{item.action}</p>
             </div>
@@ -346,7 +351,10 @@ export function RiskRanking({ teams }: { teams: Team[] }) {
             <article className={`ranking-row ${index < 2 ? "priority" : ""}`} key={team.teamId}>
               <div className="rank-team"><b className="rank">{String(index + 1).padStart(2, "0")}</b><div><strong>{team.teamName}</strong><small>{team.company}</small></div></div>
               <div className="score"><strong style={{ color: getRiskColor(getRiskLevel(score)) }}>{score}</strong><RiskBadge score={score} /></div>
-              <p className="reason">{getReasonSummary(team)}</p>
+              <div className="risk-summary">
+                <strong>{getPrimaryRisk(team)}</strong>
+                <small>{getRiskEvidence(team)}</small>
+              </div>
               <ul className="checklist">
                 <li><span />{getPrimaryQuestion(team)}</li>
                 <li><span />{getOperatorAction(team)}</li>

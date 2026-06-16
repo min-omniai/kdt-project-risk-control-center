@@ -130,7 +130,10 @@ h1 { margin: 10px 0 7px; font-size: clamp(28px, 3vw, 40px); line-height: 1.2; le
 .rank-team { display: flex; align-items: center; gap: 16px; }.rank { color: #6e7681; font-family: monospace; font-size: 13px; }
 .rank-team div { display: grid; gap: 4px; }.rank-team strong { font-size: 17px; }.rank-team small { color: #8b949e; font-size: 12px; }
 .score { display: flex; align-items: center; gap: 9px; }.score > strong { font-size: 25px; }.risk-badge { display: inline-flex; padding: 4px 8px; border: 1px solid; border-radius: 999px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.reason { margin: 0; color: #c9d1d9; font-size: 14px; line-height: 1.5; }.checklist { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; color: #8b949e; font-size: 13px; }
+.reason { margin: 0; color: #c9d1d9; font-size: 14px; line-height: 1.5; }.risk-summary { display: grid; gap: 5px; min-width: 0; }
+.risk-summary strong { color: #f0f6fc; font-size: 14px; line-height: 1.45; }
+.risk-summary small { display: -webkit-box; overflow: hidden; color: #8b949e; font-size: 12px; line-height: 1.45; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.checklist { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; color: #8b949e; font-size: 13px; }
 .checklist li { display: flex; gap: 7px; }.checklist span { flex: 0 0 auto; width: 11px; height: 11px; margin-top: 2px; border: 1px solid #484f58; border-radius: 3px; }
 .scrum-history-panel { margin-bottom: 28px; overflow: hidden; }
 .scrum-toolbar { display: flex; justify-content: space-between; gap: 18px; padding: 15px 22px; border-bottom: 1px solid #21262d; background: #0d111733; }
