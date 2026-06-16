@@ -37,6 +37,7 @@ function syncProjectRiskData() {
     const teamId = index + 1;
     const source = management.teams[teamId] || emptyManagementTeam_();
     const teamCheckins = checkins.map((day) => summarizeTeamCheckin_(day, teamId));
+    const scrumEntries = buildScrumEntries_(checkins, teamId);
     const dashboard = buildDashboardTeam_(teamId, source, management.gptSummary, teamCheckins);
 
     return {
@@ -44,6 +45,7 @@ function syncProjectRiskData() {
       recorded_date: recordedDate,
       payload: {
         dashboard,
+        scrumEntries,
         source: {
           briefing: source.briefing,
           specialNotes: source.specialNotes,
@@ -112,6 +114,36 @@ function readCheckinSheets_() {
       rows: values.slice(4).filter((row) => row[1] && row[2]),
     };
   }).filter((day) => day.date);
+}
+
+function buildScrumEntries_(days, teamId) {
+  return days
+    .flatMap((day) => day.rows
+      .filter((row) => Number(row[1]) === teamId)
+      .map((row) => {
+        const workload = String(row[3] || "").trim();
+        const comment = String(row[4] || "").trim();
+        const note = String(row[5] || "").trim();
+        const status = String(row[6] || "").trim();
+        const learnerName = String(row[2] || "").trim();
+        const hasContent = workload || comment || note || (status && status !== "대기");
+
+        if (!learnerName || !hasContent) return null;
+
+        return {
+          teamId,
+          teamName: teamId + "팀",
+          learnerName,
+          date: day.date,
+          workload,
+          comment,
+          note,
+          status: status || "상태 미기입",
+          progress: parseProgress_(workload),
+        };
+      })
+      .filter(Boolean))
+    .sort((a, b) => b.date.localeCompare(a.date) || a.learnerName.localeCompare(b.learnerName, "ko"));
 }
 
 function summarizeTeamCheckin_(day, teamId) {

@@ -7,6 +7,7 @@ import {
   OperatorActions,
   RiskBreakdown,
   RiskRanking,
+  ScrumHistory,
   TeamStatusTabs,
 } from "./components/Dashboard";
 import { calculateRiskScore, getDaysUntil, getRiskLevel } from "./utils/risk";
@@ -20,6 +21,7 @@ export default function App() {
     sourceMode,
     isLoading,
     error,
+    scrumEntries,
   } = useDashboardData();
   const scores = teams.map(calculateRiskScore);
   const riskTeams = scores.filter((score) => getRiskLevel(score) !== "Normal").length;
@@ -62,6 +64,7 @@ export default function App() {
           <RiskBreakdown teams={teams} />
         </div>
         <RiskRanking teams={teams} />
+        <ScrumHistory entries={scrumEntries} teams={teams} />
         <TeamStatusTabs teams={teams} />
         <footer>PROJECT RISK CONTROL CENTER · 공개 버전은 개인 식별 및 민감정보를 표시하지 않습니다.</footer>
       </div>

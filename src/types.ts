@@ -34,8 +34,21 @@ export interface Team {
   }[];
 }
 
+export interface ScrumEntry {
+  teamId: number;
+  teamName: string;
+  learnerName: string;
+  date: string;
+  workload: string;
+  comment: string;
+  note: string;
+  status: string;
+  progress: number | null;
+}
+
 export interface SyncedTeamPayload {
   dashboard: Team;
+  scrumEntries?: ScrumEntry[];
   source: {
     briefing: string;
     specialNotes: string;
@@ -47,6 +60,7 @@ export interface SyncedTeamPayload {
 
 export interface DashboardDataState {
   teams: Team[];
+  scrumEntries: ScrumEntry[];
   dataUpdatedAt: string;
   checkinUpdatedThrough: string;
   sourceMode: "live" | "snapshot";

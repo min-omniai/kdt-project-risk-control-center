@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { teams as snapshotTeams, project } from "../data/projectData";
 import { supabase } from "../lib/supabase";
-import type { DashboardDataState, SyncedTeamPayload, Team } from "../types";
+import type { DashboardDataState, ScrumEntry, SyncedTeamPayload, Team } from "../types";
 
 const initialState: DashboardDataState = {
   teams: snapshotTeams,
+  scrumEntries: [],
   dataUpdatedAt: project.dataUpdatedAt,
   checkinUpdatedThrough: project.checkinUpdatedThrough,
   sourceMode: "snapshot",
@@ -24,6 +25,21 @@ function isTeam(value: unknown): value is Team {
     Array.isArray(team.risks) &&
     Array.isArray(team.requiredQuestions) &&
     Array.isArray(team.checkinHistory)
+  );
+}
+
+function isScrumEntry(value: unknown): value is ScrumEntry {
+  if (!value || typeof value !== "object") return false;
+  const entry = value as ScrumEntry;
+  return (
+    Number.isInteger(entry.teamId) &&
+    typeof entry.teamName === "string" &&
+    typeof entry.learnerName === "string" &&
+    typeof entry.date === "string" &&
+    typeof entry.workload === "string" &&
+    typeof entry.comment === "string" &&
+    typeof entry.note === "string" &&
+    typeof entry.status === "string"
   );
 }
 
@@ -74,6 +90,14 @@ export function useDashboardData(): DashboardDataState {
       .filter(isTeam)
       .sort((a, b) => a.teamId - b.teamId);
 
+    const scrumEntries = [...latestByTeam.values()]
+      .flatMap((row) => {
+        const payload = row.payload as SyncedTeamPayload | null;
+        return Array.isArray(payload?.scrumEntries) ? payload.scrumEntries : [];
+      })
+      .filter(isScrumEntry)
+      .sort((a, b) => b.date.localeCompare(a.date) || a.learnerName.localeCompare(b.learnerName));
+
     if (liveTeams.length !== 8) {
       setState((current) => ({
         ...current,
@@ -97,6 +121,7 @@ export function useDashboardData(): DashboardDataState {
 
     setState({
       teams: liveTeams,
+      scrumEntries,
       dataUpdatedAt: formatTimestamp(latestUpdate),
       checkinUpdatedThrough: latestRecordedDate,
       sourceMode: "live",

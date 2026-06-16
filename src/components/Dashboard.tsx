@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Milestone, RiskKey, Team } from "../types";
+import type { Milestone, RiskKey, ScrumEntry, Team } from "../types";
 import {
   calculateRiskScore,
   getDaysUntil,
@@ -127,6 +127,95 @@ export function RiskRanking({ teams }: { teams: Team[] }) {
           );
         })}
       </div>
+    </section>
+  );
+}
+
+export function ScrumHistory({ entries, teams }: { entries: ScrumEntry[]; teams: Team[] }) {
+  const [selectedTeamId, setSelectedTeamId] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const selectedTeam = teams.find((team) => team.teamId === selectedTeamId) ?? teams[0];
+  const teamEntries = entries
+    .filter((entry) => entry.teamId === selectedTeam?.teamId)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  const learnerNames = [...new Set(teamEntries.map((entry) => entry.learnerName))]
+    .filter((name) => name.includes(searchTerm.trim()))
+    .sort((a, b) => a.localeCompare(b, "ko"));
+
+  return (
+    <section className="panel scrum-history-panel">
+      <SectionTitle
+        title="데일리 스크럼 히스토리"
+        subtitle="팀별 학습자 작업 기록을 날짜 내림차순으로 확인합니다"
+      />
+      <div className="scrum-toolbar">
+        <div className="scrum-team-tabs" role="tablist" aria-label="스크럼 히스토리 팀 선택">
+          {teams.map((team) => (
+            <button
+              aria-selected={selectedTeam?.teamId === team.teamId}
+              className={selectedTeam?.teamId === team.teamId ? "active" : ""}
+              key={team.teamId}
+              onClick={() => setSelectedTeamId(team.teamId)}
+              role="tab"
+              type="button"
+            >
+              <span>{team.teamName}</span>
+              <small>{team.company}</small>
+            </button>
+          ))}
+        </div>
+        <label className="scrum-search">
+          <span>학습자 검색</span>
+          <input
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="이름 입력"
+            type="search"
+            value={searchTerm}
+          />
+        </label>
+      </div>
+
+      {teamEntries.length === 0 ? (
+        <div className="scrum-empty">
+          아직 학습자별 스크럼 히스토리가 동기화되지 않았습니다. 최신 Apps Script의
+          syncProjectRiskData를 한 번 실행하면 표시됩니다.
+        </div>
+      ) : learnerNames.length === 0 ? (
+        <div className="scrum-empty">검색 조건에 맞는 학습자가 없습니다.</div>
+      ) : (
+        <div className="scrum-learner-grid">
+          {learnerNames.map((learnerName) => {
+            const learnerEntries = teamEntries.filter((entry) => entry.learnerName === learnerName);
+            return (
+              <article className="scrum-learner-card" key={learnerName}>
+                <header>
+                  <div>
+                    <span>{selectedTeam?.company} · {selectedTeam?.teamName}</span>
+                    <h3>{learnerName}</h3>
+                  </div>
+                  <strong>{learnerEntries.length}건</strong>
+                </header>
+                <div className="scrum-entry-list">
+                  {learnerEntries.map((entry) => (
+                    <div className="scrum-entry-item" key={`${entry.learnerName}-${entry.date}`}>
+                      <div className="scrum-entry-head">
+                        <b>{entry.date}</b>
+                        <span className="scrum-progress-chip">
+                          {entry.progress === null ? "진척 미기입" : `${entry.progress}%`}
+                        </span>
+                      </div>
+                      <p>{entry.workload || "작업 내용 미기입"}</p>
+                      {entry.comment && <small>{entry.comment}</small>}
+                      {entry.note && <em>{entry.note}</em>}
+                      <span className="scrum-status">{entry.status || "상태 미기입"}</span>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
