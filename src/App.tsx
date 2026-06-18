@@ -40,7 +40,10 @@ export default function App() {
     .filter((team) => calculateRiskScore(team) === topTeamScore)
     .map((team) => team.teamName)
     .join(", ");
-  const attentionTeamNames = attentionTeams.map((team) => team.teamName).join(", ");
+  const attentionTeamNames = [...attentionTeams]
+    .sort((a, b) => a.teamId - b.teamId)
+    .map((team) => team.teamName)
+    .join(", ");
   const cbtMilestone = project.milestones.find((item) => item.name.includes("CBT 1"));
   const cbtDday = cbtMilestone ? getDaysUntil(cbtMilestone.date, today) : 0;
 
