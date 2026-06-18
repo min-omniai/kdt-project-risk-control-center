@@ -116,6 +116,13 @@ h1 { margin: 10px 0 7px; font-size: clamp(28px, 3vw, 40px); line-height: 1.2; le
 .category-list { padding: 11px 22px 17px; }.category { padding: 10px 0; }
 .category > div { display: flex; justify-content: space-between; margin-bottom: 7px; }.category strong { font-size: 13px; }.category span, .category small { color: #8b949e; font-size: 11px; }
 .category small { display: block; margin-top: 6px; }.bar-track { height: 5px; overflow: hidden; border-radius: 10px; background: #21262d; }.bar-track span { display: block; height: 100%; border-radius: inherit; }
+.category-detail { margin-top: 8px; border: 1px solid #21262d; border-radius: 8px; background: #0d111766; }
+.category-detail summary { padding: 8px 10px; color: #58a6ff; cursor: pointer; font-size: 12px; font-weight: 900; }
+.category-bottleneck-list { display: grid; gap: 7px; padding: 0 10px 10px; }
+.category-bottleneck-list article { padding: 9px 10px; border: 1px solid #21262d; border-radius: 7px; background: #0d1117; }
+.category-bottleneck-list b { display: block; margin-bottom: 5px; color: #f0f6fc; font-size: 13px; }
+.category-bottleneck-list p { display: -webkit-box; margin: 0; overflow: hidden; color: #c9d1d9; font-size: 12px; line-height: 1.45; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.category-bottleneck-list em { display: block; margin-top: 6px; color: #8b949e; font-size: 11px; font-style: normal; line-height: 1.4; }
 .ranking-panel { margin-bottom: 32px; overflow: hidden; }
 .ranking-head, .ranking-row { display: grid; grid-template-columns: 1.05fr .55fr 1.25fr 2fr; align-items: center; gap: 18px; }
 .ranking-head { padding: 11px 22px; color: #6e7681; background: #0d111780; font-size: 12px; font-weight: 800; text-transform: uppercase; }

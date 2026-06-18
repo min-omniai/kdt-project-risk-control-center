@@ -416,13 +416,66 @@ const categories: { key: RiskKey; label: string }[] = [
   { key: "collaborationRisk", label: "협업" },
 ];
 
+function getRiskBottleneck(team: Team, key: RiskKey): string {
+  const candidates = [
+    ...team.risks,
+    ...team.specialNotes,
+    team.status,
+    team.riskSourceText,
+  ]
+    .filter((text): text is string => Boolean(text))
+    .flatMap((text) => text.split(/\r?\n|[.!?]\s+/))
+    .map((text) => text.replace(/\s+/g, " ").replace(/^[-•\d.)\s]+/, "").trim())
+    .filter((text) =>
+      text.length >= 5 &&
+      text.length <= 90 &&
+      !/[🟢🟡🔴]/.test(text) &&
+      !/^팀\s/.test(text) &&
+      !/병목 없음|지연[·\s]*병목 없음|위험 없음|순조|정상|양호|계획대로|당부/.test(text)
+    );
+
+  if (key === "planningRisk") {
+    return candidates.find((text) => /기획|범위|확정|튜토리얼|스킬 DB|특수 블록/.test(text)) || getPrimaryQuestion(team);
+  }
+  if (key === "scheduleRisk") {
+    return candidates.find((text) => /일정|지연|마감|병목|시간|복구|범위/.test(text)) || getPrimaryQuestion(team);
+  }
+  if (key === "technicalRisk") {
+    return candidates.find((text) => /기술|버그|에러|빌드|루프|검증|예외|통합/.test(text)) || getPrimaryQuestion(team);
+  }
+  if (key === "healthRisk") {
+    return candidates.find((text) => /건강|컨디션|피로|수면|복통|허리|병원|과부하|멘탈/.test(text)) || getPrimaryQuestion(team);
+  }
+  return candidates.find((text) => /협업|소통|인수인계|업무 공백|회의|이탈|재배치/.test(text)) || getPrimaryQuestion(team);
+}
+
 export function RiskBreakdown({ teams }: { teams: Team[] }) {
   return (
     <section className="panel breakdown-panel">
       <SectionTitle title="리스크 유형" subtitle="일정/기획/기술/컨디션/협업 신호" />
       <div className="category-list">{categories.map(({ key, label }) => {
         const affected = teams.filter((team) => hasRiskSignal(team, key));
-        return <div className="category" key={key}><div><strong>{label}</strong><span>{affected.length}팀</span></div><ProgressBar value={(affected.length / teams.length) * 100} kind="risk-density" /><small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small></div>;
+        return (
+          <div className="category" key={key}>
+            <div><strong>{label}</strong><span>{affected.length}팀</span></div>
+            <ProgressBar value={(affected.length / teams.length) * 100} kind="risk-density" />
+            <small>{affected.length ? affected.map((team) => team.teamName).join(", ") : "해당 없음"}</small>
+            {affected.length > 0 && (
+              <details className="category-detail">
+                <summary>팀별 병목 보기</summary>
+                <div className="category-bottleneck-list">
+                  {affected.map((team) => (
+                    <article key={`${key}-${team.teamId}`}>
+                      <b>{team.teamName}</b>
+                      <p>{getRiskBottleneck(team, key)}</p>
+                      <em>{getPrimaryQuestion(team)}</em>
+                    </article>
+                  ))}
+                </div>
+              </details>
+            )}
+          </div>
+        );
       })}</div>
     </section>
   );
