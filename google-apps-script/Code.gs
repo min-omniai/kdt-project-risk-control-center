@@ -18,10 +18,10 @@ const RISK_KEYWORDS = {
     "기획 협의", "특수 블록", "튜토리얼 기획", "스킬 DB", "추가 기획", "기획 유입",
     "기능 범위", "필수 범위", "범위 확정", "범위 공유", "테스트 범위",
   ],
-  scheduleRisk: ["지연", "일정 재조정", "일정 변경", "시간 부족", "병목", "밀린", "작업량 과다", "복구 일정", "마감 복구"],
-  technicalRisk: ["버그", "에러", "예외 처리", "작동 안", "통합 지연", "기술 검증", "R&D", "빌드", "핵심 루프"],
+  scheduleRisk: ["일정 지연", "마일스톤 지연", "마감 지연", "통합 지연", "일정 재조정", "일정 변경", "시간 부족", "일정 병목", "밀린 작업", "작업량 과다", "복구 일정", "마감 복구"],
+  technicalRisk: ["기술 리스크", "치명 오류", "런타임 오류", "예외 처리", "작동 안", "통합 지연", "기술 검증 실패", "R&D", "핵심 루프", "플레이 가능한 빌드"],
   healthRisk: ["건강", "컨디션", "복통", "허리", "수면", "피로", "멘탈", "의욕", "조퇴", "병원", "과부하"],
-  collaborationRisk: ["이탈", "탈퇴", "인원 재배치", "인수인계", "소통 문제", "협업 문제", "업무 공백", "팀장 회의"],
+  collaborationRisk: ["이탈", "탈퇴", "인원 재배치", "인수인계", "소통 문제", "협업 문제", "업무 공백", "업무 재분배", "업무 조정", "역할 조정", "팀장 회의"],
 };
 
 function syncProjectRiskData() {
@@ -293,8 +293,28 @@ function compactList_(values, limit) {
   return [...new Set(values.map(cleanBullet_).filter(Boolean))].slice(0, limit);
 }
 
+function isNegatedRiskContext_(text, keyword, index) {
+  const after = text.slice(index + keyword.length, index + keyword.length + 8);
+  const around = text.slice(Math.max(0, index - 8), index + keyword.length + 8);
+
+  return (
+    after.indexOf("없") !== -1 ||
+    around.indexOf("문제 없음") !== -1 ||
+    around.indexOf("이슈 없음") !== -1 ||
+    around.indexOf("리스크 없음") !== -1
+  );
+}
+
 function hasAny_(text, keywords) {
-  return keywords.some((keyword) => String(text || "").includes(keyword));
+  const source = String(text || "");
+  return keywords.some((keyword) => {
+    let index = source.indexOf(keyword);
+    while (index !== -1) {
+      if (!isNegatedRiskContext_(source, keyword, index)) return true;
+      index = source.indexOf(keyword, index + keyword.length);
+    }
+    return false;
+  });
 }
 
 function emptyManagementTeam_() {
