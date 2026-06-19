@@ -93,6 +93,17 @@ function getPrimaryRisk(team: Team): string {
   return team.risks[0] || getReasonSummary(team);
 }
 
+function getRiskEvidence(team: Team): string {
+  return team.risks[1] || team.specialNotes[0] || team.status;
+}
+
+function getRiskDetails(team: Team): string[] {
+  return [...new Set([
+    ...team.risks.slice(1),
+    ...team.specialNotes,
+  ].filter(Boolean))];
+}
+
 function getJudgmentCriteria(team: Team): string {
   if (hasRiskSignal(team, "planningRisk")) return "CBT 필수 범위가 오늘 안에 잠기면 진행, 아니면 범위 축소";
   if (hasRiskSignal(team, "scheduleRisk")) return "다음 마일스톤까지 복구 일정과 담당자가 명확하면 진행";
@@ -112,6 +123,65 @@ function getOperatorAction(team: Team): string {
   return "현재 계획 유지, 다음 체크인만 확인";
 }
 
+function findContextText(team: Team, keywords: string[], fallback: string): string {
+  const texts = [...team.risks, ...team.specialNotes, team.status, ...team.goodPoints];
+  return texts.find((text) => keywords.some((keyword) => text.includes(keyword))) || fallback;
+}
+
+function getQuestionContext(team: Team, question: string) {
+  const baseRisk = getPrimaryRisk(team);
+  const planningKeywords = ["기획", "DB", "UI", "범위", "제외", "확정", "임시", "더미"];
+  const scheduleKeywords = ["수요일", "목~금", "금요일", "내일", "23일", "18일", "이번 주", "다음 주", "완성률", "완료", "마감"];
+  const technicalKeywords = ["Firestore", "Storage", "SO", "빌드", "버그", "스킬", "인챈트", "투사체", "인터페이스", "플레이 흐름", "시연", "프레임워크", "캡처"];
+  const collaborationKeywords = ["담당", "미배정", "팀원", "페어", "인수인계", "공유", "DM"];
+
+  if (hasHealthSignal(question)) {
+    return {
+      evidence: findContextText(team, healthKeywords, baseRisk),
+      criteria: "오늘 작업 지속 가능 여부와 대체 담당자가 확인되면 진행",
+      action: "컨디션 확인 후 업무량을 조정하고 공백 시 대체 투입 기준을 남김",
+    };
+  }
+
+  if (technicalKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, technicalKeywords, baseRisk),
+      criteria: "실제 빌드나 화면에서 재현·시연 가능한 상태면 진행",
+      action: "담당자와 오늘 닫을 기술 병목을 정하고 페어 디버깅 또는 빌드 시연으로 확인",
+    };
+  }
+
+  if (planningKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, planningKeywords, baseRisk),
+      criteria: "확정 대기 항목과 임시 진행 가능 항목이 분리되면 진행",
+      action: "15분 안에 결정자, 확정 시각, 임시 데이터 기준을 문서화",
+    };
+  }
+
+  if (scheduleKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, scheduleKeywords, baseRisk),
+      criteria: "완료 범위, 제외 범위, 담당자와 확인 시각이 명확하면 진행",
+      action: "오늘 종료 전 완료·이월 목록을 DM 또는 시트에 남김",
+    };
+  }
+
+  if (collaborationKeywords.some((keyword) => question.includes(keyword))) {
+    return {
+      evidence: findContextText(team, collaborationKeywords, baseRisk),
+      criteria: "담당 경계와 인수인계 대상이 한 문장으로 정리되면 진행",
+      action: "담당자별 다음 작업과 공유 위치를 확정하고 운영진에게 갱신",
+    };
+  }
+
+  return {
+    evidence: baseRisk,
+    criteria: getJudgmentCriteria(team),
+    action: getOperatorAction(team),
+  };
+}
+
 function getOperatorActionItems(teams: Team[]) {
   const rankedTeams = sortTeamsByRisk(teams);
   const targetTeams = rankedTeams.filter((team) => getRiskLevel(calculateRiskScore(team)) !== "Normal");
@@ -119,13 +189,36 @@ function getOperatorActionItems(teams: Team[]) {
 
   return actionTeams.flatMap((team) => {
     const questions = team.requiredQuestions.length ? team.requiredQuestions : [getPrimaryQuestion(team)];
-    return questions.map((question) => ({
-      team,
-      question,
-      criteria: getJudgmentCriteria(team),
-      action: getOperatorAction(team),
-    }));
+    return questions.map((question) => ({ team, question, ...getQuestionContext(team, question) }));
   });
+}
+
+function getTeamActionItems(team: Team) {
+  const questions = team.requiredQuestions.length ? team.requiredQuestions : [getPrimaryQuestion(team)];
+  return questions.map((question) => ({ team, question, ...getQuestionContext(team, question) }));
+}
+
+function getCheckinTrend(team: Team): string {
+  const history = team.checkinHistory;
+  if (history.length < 2) return `최신 체크인 ${team.checkinRate}%`;
+  const rates = history.map((item) => item.rate);
+  const first = rates[0];
+  const last = rates[rates.length - 1];
+  const label = last > first ? "개선" : last < first ? "하락" : "유지";
+  return `체크인 ${rates.join(" → ")}% · ${label}`;
+}
+
+function getBriefingReason(team: Team): string {
+  if (hasRiskSignal(team, "planningRisk")) return findContextText(team, ["기획", "DB", "UI", "범위", "확정"], getPrimaryRisk(team));
+  if (hasRiskSignal(team, "technicalRisk")) return findContextText(team, ["Firestore", "Storage", "SO", "버그", "빌드", "프레임워크", "스킬", "투사체", "인터페이스"], getPrimaryRisk(team));
+  if (hasRiskSignal(team, "scheduleRisk")) return findContextText(team, ["수요일", "금요일", "내일", "23일", "18일", "완료", "마감", "이월"], getPrimaryRisk(team));
+  if (hasRiskSignal(team, "healthRisk")) return findContextText(team, healthKeywords, getPrimaryRisk(team));
+  return getPrimaryRisk(team);
+}
+
+function getBriefingGoal(team: Team): string {
+  const firstContext = getQuestionContext(team, getPrimaryQuestion(team));
+  return firstContext.criteria;
 }
 
 function getHealthWatchItems(entries: ScrumEntry[], teams: Team[]) {
@@ -244,29 +337,78 @@ function formatDday(days: number): string {
 }
 
 export function OperatorActions({ teams }: { teams: Team[] }) {
+  const sortedTeams = [...teams].sort((a, b) => a.teamId - b.teamId);
+  const [selectedTeamId, setSelectedTeamId] = useState(sortedTeams[0]?.teamId ?? 1);
   const [page, setPage] = useState(0);
-  const actions = getOperatorActionItems(teams);
+  const selectedTeam = sortedTeams.find((team) => team.teamId === selectedTeamId) ?? sortedTeams[0];
+  const totalQuestionCount = sortedTeams.reduce(
+    (sum, team) => sum + Math.max(1, team.requiredQuestions.length),
+    0,
+  );
+  const actions = selectedTeam ? getTeamActionItems(selectedTeam) : [];
   const pageSize = 3;
   const totalPages = Math.max(1, Math.ceil(actions.length / pageSize));
   const currentPage = Math.min(page, totalPages - 1);
   const startIndex = currentPage * pageSize;
   const visibleActions = actions.slice(startIndex, startIndex + pageSize);
+  const selectedTeamScore = selectedTeam ? calculateRiskScore(selectedTeam) : 0;
 
   return (
     <section className="panel action-panel">
       <div className="action-heading">
         <div><span className="eyebrow">TODAY'S FOCUS</span><h2>오늘 필수 확인 질문</h2></div>
         <div className="action-meta">
-          <span className="action-count">총 {actions.length}개 · {startIndex + 1}-{Math.min(startIndex + pageSize, actions.length)}번</span>
-          <small>질문 → 판단 기준 → 후속 조치</small>
+          <span className="action-count">총 {totalQuestionCount}개 · {selectedTeam?.teamName ?? "팀"} {actions.length}개</span>
+          <small>질문 → 확인 근거 → 판단 기준 → 후속 조치</small>
         </div>
       </div>
-      <ol>
+      <div className="action-team-tabs" role="tablist" aria-label="필수 확인 질문 팀 선택">
+        {sortedTeams.map((team) => {
+          const isSelected = team.teamId === selectedTeam?.teamId;
+          return (
+            <button
+              aria-controls="operator-action-list"
+              aria-selected={isSelected}
+              className={isSelected ? "active" : ""}
+              key={team.teamId}
+              onClick={() => {
+                setSelectedTeamId(team.teamId);
+                setPage(0);
+              }}
+              role="tab"
+              type="button"
+            >
+              <span>{team.teamName}</span>
+              <small>{team.requiredQuestions.length || 1}개</small>
+            </button>
+          );
+        })}
+      </div>
+      {selectedTeam && (
+        <div className="action-team-summary">
+          <div>
+            <span>{selectedTeam.company} · {selectedTeam.teamName}</span>
+            <strong>{selectedTeam.status}</strong>
+          </div>
+          <dl>
+            <div><dt>위험</dt><dd style={{ color: getRiskColor(getRiskLevel(selectedTeamScore)) }}>{selectedTeamScore}</dd></div>
+            <div><dt>진척</dt><dd>{selectedTeam.progress}%</dd></div>
+            <div><dt>체크인</dt><dd>{selectedTeam.checkinRate}%</dd></div>
+          </dl>
+          <div className="briefing-context">
+            <p><b>최근 흐름</b>{getCheckinTrend(selectedTeam)} · {selectedTeam.status}</p>
+            <p><b>오늘 봐야 할 이유</b>{getBriefingReason(selectedTeam)}</p>
+            <p><b>브리핑 목표</b>{getBriefingGoal(selectedTeam)}</p>
+          </div>
+        </div>
+      )}
+      <ol id="operator-action-list" role="tabpanel" aria-label={`${selectedTeam?.teamName ?? "선택한 팀"} 필수 확인 질문`}>
         {visibleActions.map((item, index) => (
           <li key={`${item.team.teamId}-${item.question}`}>
-            <span>{String(startIndex + index + 1).padStart(2, "0")}</span>
+            <span>{String(index + 1 + startIndex).padStart(2, "0")}</span>
             <div>
-              <strong>{item.team.teamName}: {item.question}</strong>
+              <strong>{item.question}</strong>
+              <p><b>확인 근거</b>{item.evidence}</p>
               <p><b>판단 기준</b>{item.criteria}</p>
               <p><b>후속 조치</b>{item.action}</p>
             </div>
@@ -303,11 +445,22 @@ export function RiskRanking({ teams }: { teams: Team[] }) {
       <div className="ranking-list">
         {sortTeamsByRisk(teams).map((team, index) => {
           const score = calculateRiskScore(team);
+          const riskDetails = getRiskDetails(team);
           return (
             <article className={`ranking-row ${index < 2 ? "priority" : ""}`} key={team.teamId}>
               <div className="rank-team"><b className="rank">{String(index + 1).padStart(2, "0")}</b><div><strong>{team.teamName}</strong><small>{team.company}</small></div></div>
               <div className="score"><strong style={{ color: getRiskColor(getRiskLevel(score)) }}>{score}</strong><RiskBadge score={score} /></div>
-              <p className="reason">{getReasonSummary(team)}</p>
+              <div className="risk-summary">
+                <strong>{getPrimaryRisk(team)}</strong>
+                {riskDetails.length > 0 && (
+                  <details>
+                    <summary>세부 리스크 {riskDetails.length}개</summary>
+                    <ul>
+                      {riskDetails.map((risk) => <li key={risk}>{risk}</li>)}
+                    </ul>
+                  </details>
+                )}
+              </div>
               <ul className="checklist">
                 <li><span />{getPrimaryQuestion(team)}</li>
                 <li><span />{getOperatorAction(team)}</li>

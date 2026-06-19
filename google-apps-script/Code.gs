@@ -194,7 +194,10 @@ function buildDashboardTeam_(teamId, source, gptSummary, checkins) {
     ...checkins.flatMap((item) => item.riskNotes),
   ].join("\n");
   const parsedSummary = parseGptTeamSummary_(gptLine);
-  const risks = extractRiskSentences_(combined);
+  const risks = compactList_([
+    teamRiskSummary_(teamId, combined),
+    ...extractRiskSentences_(combined),
+  ], 3);
   const goodPoints = extractPositiveSentences_(source.briefing);
 
   return {
@@ -213,6 +216,7 @@ function buildDashboardTeam_(teamId, source, gptSummary, checkins) {
     risks,
     specialNotes: compactList_([source.specialNotes, ...(latest.riskNotes || [])], 2),
     requiredQuestions: compactList_([
+      dailyBriefingQuestion_(teamId, combined),
       parsedSummary.question,
       defaultQuestion_(teamId, combined),
     ], 2),
@@ -277,6 +281,39 @@ function defaultQuestion_(teamId, text) {
   if (hasConfirmedRisk_(teamId, "healthRisk", text)) return "컨디션 이슈에 대비한 업무 재분배가 필요한가?";
   if (hasConfirmedRisk_(teamId, "collaborationRisk", text)) return "팀 내 병합·보고·역할 공유가 충분히 이루어지고 있는가?";
   return teamId + "팀의 다음 마일스톤 완료 기준이 명확한가?";
+}
+
+function dailyBriefingQuestion_(teamId, text) {
+  const questions = {
+    1: "수요일 기준 로직 완성률은 몇 %이고, 목~금 통합에 들어갈 미배정 작업 담당자는 정해졌는가?",
+    2: "냥냥 스냅은 수~목 기준 실제 플레이 가능한 상태로 시연 가능한가?",
+    3: "23일 기준 이번 주 안에 완료할 기능과 다음 주로 이월할 기능을 목록으로 확정했는가?",
+    4: "내일 기준 필수 플레이 루프 70% 완성 여부를 실제 화면으로 시연 가능한가?",
+    5: "오늘 산정한 기획 확정 일정이 퀘스트·대화 시스템 작업 일정에 반영됐는가?",
+    6: "소팅 규칙은 횟수 제한과 시간 제한 중 오늘 어떤 기준으로 최종 확정할 것인가?",
+    7: "18일 기준 전체 기능 골격이 하나의 플레이 흐름으로 연결되어 동작하는가?",
+    8: "수요일 병합 후 금요일 테스트 가능한 기능과 제외할 기능 목록을 DM으로 공유했는가?",
+  };
+  if (hasAny_(text, ["허리", "건강", "컨디션"])) {
+    return teamId === 1
+      ? "이인님 허리 통증이 오늘 작업에 영향 있는지, 공백 시 대체 투입 기준은 정했는가?"
+      : questions[teamId];
+  }
+  return questions[teamId] || defaultQuestion_(teamId, text);
+}
+
+function teamRiskSummary_(teamId, text) {
+  const summaries = {
+    1: "이인 허리 통증과 낮은 체크인으로 대체 투입 기준 필요",
+    2: "이수형 프레임워크 이해 편차와 Firestore 연동 이슈가 냥냥 스냅 일정에 영향",
+    3: "23일 기준 이번 주 완료 범위와 다음 주 이월 기능 재산정 필요",
+    4: "미확정 UI 기획 일정과 출시 검증 이슈가 필수 루프 마감에 영향",
+    5: "기획 확정 일정이 퀘스트·대화 시스템 작업 일정에 반영되지 않으면 병목",
+    6: "소팅 규칙 최종 결정과 핵심 버그 원인 추적이 QA 전환의 병목",
+    7: "기능 골격은 안정적이나 덱 편성·스폰·포탑 흐름 통합 검증 전",
+    8: "하우징 DB 기획 지연과 수요일 병합 범위 불명확으로 금요일 테스트 리스크",
+  };
+  return summaries[teamId] || deriveStatus_(text);
 }
 
 function parseProgress_(value) {

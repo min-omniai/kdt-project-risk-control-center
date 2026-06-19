@@ -31,7 +31,7 @@ export default function App() {
   const topTeamScore = topTeam ? calculateRiskScore(topTeam) : 0;
   const attentionTeams = rankedTeams.filter((team) => getRiskLevel(calculateRiskScore(team)) !== "Normal");
   const riskTeams = attentionTeams.length;
-  const requiredQuestionCount = attentionTeams.reduce(
+  const requiredQuestionCount = teams.reduce(
     (sum, team) => sum + Math.max(1, team.requiredQuestions.length),
     0,
   );
@@ -67,15 +67,15 @@ export default function App() {
             detail={highestRiskTeams && highestRiskTeams !== topTeam?.teamName ? `동점: ${highestRiskTeams}` : "오늘 먼저 확인할 팀"}
             tone="danger"
           />
-          <KpiCard label="질문 수" value={`${requiredQuestionCount}개`} hint="필수 확인 질문 전체" detail="3개씩 넘겨보기" tone="info" />
+          <KpiCard label="질문 수" value={`${requiredQuestionCount}개`} hint="필수 확인 질문 전체" detail="팀별 탭으로 확인" tone="info" />
           <KpiCard label="주의팀 수" value={`${riskTeams}개`} hint="Caution 이상 팀" detail={attentionTeamNames || "해당 없음"} tone="warning" />
           <KpiCard label="CBT D-day" value={`D-${cbtDday}`} hint={cbtMilestone?.date.replaceAll("-", ".") ?? "일정 없음"} tone="info" />
           <KpiCard label="평균위험" value={averageRisk} hint={`${teams.length}개 팀 위험점수 평균`} detail={`최고 ${highestRiskTeams || "-"} ${topTeamScore}점`} tone="warning" />
         </section>
 
-        <OperatorActions teams={teams} />
         <RiskRanking teams={teams} />
         <TeamStatusTabs teams={teams} />
+        <OperatorActions teams={teams} />
 
         <div className="two-column">
           <RiskBreakdown teams={teams} />
