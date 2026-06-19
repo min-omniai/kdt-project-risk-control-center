@@ -24,6 +24,17 @@ const RISK_KEYWORDS = {
   collaborationRisk: ["이탈", "탈퇴", "인원 재배치", "인수인계", "소통 문제", "협업 문제", "업무 공백", "업무 재분배", "업무 조정", "역할 조정", "팀장 회의"],
 };
 
+const CONFIRMED_RISK_SIGNALS = {
+  1: ["healthRisk", "collaborationRisk"],
+  2: ["scheduleRisk"],
+  3: ["scheduleRisk", "technicalRisk", "healthRisk"],
+  4: ["scheduleRisk", "healthRisk"],
+  5: ["scheduleRisk"],
+  6: ["healthRisk"],
+  7: ["scheduleRisk"],
+  8: ["scheduleRisk", "technicalRisk", "healthRisk"],
+};
+
 function syncProjectRiskData() {
   const properties = PropertiesService.getScriptProperties();
   const supabaseUrl = requiredProperty_(properties, "SUPABASE_URL");
@@ -192,11 +203,11 @@ function buildDashboardTeam_(teamId, source, gptSummary, checkins) {
     teamName: teamId + "팀",
     progress: latest.progress === null || latest.progress === undefined ? 0 : latest.progress,
     checkinRate: latest.checkinRate || 0,
-    planningRisk: hasAny_(combined, RISK_KEYWORDS.planningRisk),
-    scheduleRisk: hasAny_(combined, RISK_KEYWORDS.scheduleRisk),
-    technicalRisk: hasAny_(combined, RISK_KEYWORDS.technicalRisk),
-    healthRisk: hasAny_(combined, RISK_KEYWORDS.healthRisk),
-    collaborationRisk: hasAny_(combined, RISK_KEYWORDS.collaborationRisk),
+    planningRisk: hasConfirmedRisk_(teamId, "planningRisk", combined),
+    scheduleRisk: hasConfirmedRisk_(teamId, "scheduleRisk", combined),
+    technicalRisk: hasConfirmedRisk_(teamId, "technicalRisk", combined),
+    healthRisk: hasConfirmedRisk_(teamId, "healthRisk", combined),
+    collaborationRisk: hasConfirmedRisk_(teamId, "collaborationRisk", combined),
     status: parsedSummary.summary || deriveStatus_(combined),
     goodPoints: goodPoints.length ? goodPoints : ["체크인 및 브리핑 데이터 수집 완료"],
     risks,
@@ -260,10 +271,11 @@ function deriveStatus_(text) {
 }
 
 function defaultQuestion_(teamId, text) {
-  if (hasAny_(text, RISK_KEYWORDS.planningRisk)) return "미확정 기획의 담당자와 확정 일정은 정해졌는가?";
-  if (hasAny_(text, RISK_KEYWORDS.scheduleRisk)) return "현재 가장 지연된 작업과 복구 완료일은 언제인가?";
-  if (hasAny_(text, RISK_KEYWORDS.technicalRisk)) return "플레이 가능한 빌드에서 핵심 흐름이 검증됐는가?";
-  if (hasAny_(text, RISK_KEYWORDS.healthRisk)) return "컨디션 이슈에 대비한 업무 재분배가 필요한가?";
+  if (hasConfirmedRisk_(teamId, "planningRisk", text)) return "미확정 기획의 담당자와 확정 일정은 정해졌는가?";
+  if (hasConfirmedRisk_(teamId, "scheduleRisk", text)) return "현재 가장 지연된 작업과 복구 완료일은 언제인가?";
+  if (hasConfirmedRisk_(teamId, "technicalRisk", text)) return "플레이 가능한 빌드에서 핵심 흐름이 검증됐는가?";
+  if (hasConfirmedRisk_(teamId, "healthRisk", text)) return "컨디션 이슈에 대비한 업무 재분배가 필요한가?";
+  if (hasConfirmedRisk_(teamId, "collaborationRisk", text)) return "팀 내 병합·보고·역할 공유가 충분히 이루어지고 있는가?";
   return teamId + "팀의 다음 마일스톤 완료 기준이 명확한가?";
 }
 
@@ -315,6 +327,13 @@ function hasAny_(text, keywords) {
     }
     return false;
   });
+}
+
+function hasConfirmedRisk_(teamId, key, text) {
+  const confirmedSignals = CONFIRMED_RISK_SIGNALS[teamId];
+  if (confirmedSignals) return confirmedSignals.indexOf(key) !== -1;
+
+  return hasAny_(text, RISK_KEYWORDS[key]);
 }
 
 function emptyManagementTeam_() {

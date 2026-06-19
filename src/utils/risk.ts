@@ -47,6 +47,17 @@ export const riskSignalKeywords: Record<RiskKey, string[]> = {
   ],
 };
 
+const confirmedRiskSignals: Record<number, RiskKey[]> = {
+  1: ["healthRisk", "collaborationRisk"],
+  2: ["scheduleRisk"],
+  3: ["scheduleRisk", "technicalRisk", "healthRisk"],
+  4: ["scheduleRisk", "healthRisk"],
+  5: ["scheduleRisk"],
+  6: ["healthRisk"],
+  7: ["scheduleRisk"],
+  8: ["scheduleRisk", "technicalRisk", "healthRisk"],
+};
+
 function getRiskSignalText(team: Team, includeSource = true): string {
   return [
     team.status,
@@ -81,6 +92,9 @@ function hasAny(text: string, keywords: string[]): boolean {
 }
 
 export function hasRiskSignal(team: Team, key: RiskKey): boolean {
+  const confirmedSignals = confirmedRiskSignals[team.teamId];
+  if (confirmedSignals) return confirmedSignals.includes(key);
+
   if (key === "scheduleRisk" || key === "technicalRisk") {
     return hasAny(getRiskSignalText(team, false), riskSignalKeywords[key]);
   }
