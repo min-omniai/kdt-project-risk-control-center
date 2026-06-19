@@ -55,7 +55,7 @@ const confirmedRiskSignals: Record<number, RiskKey[]> = {
   5: ["scheduleRisk"],
   6: ["healthRisk"],
   7: ["scheduleRisk"],
-  8: ["scheduleRisk", "technicalRisk", "healthRisk"],
+  8: ["scheduleRisk", "collaborationRisk"],
 };
 
 function getRiskSignalText(team: Team, includeSource = true): string {

@@ -32,7 +32,7 @@ const CONFIRMED_RISK_SIGNALS = {
   5: ["scheduleRisk"],
   6: ["healthRisk"],
   7: ["scheduleRisk"],
-  8: ["scheduleRisk", "technicalRisk", "healthRisk"],
+  8: ["scheduleRisk", "collaborationRisk"],
 };
 
 function syncProjectRiskData() {
