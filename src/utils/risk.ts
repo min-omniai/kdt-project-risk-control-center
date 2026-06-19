@@ -52,7 +52,7 @@ const confirmedRiskSignals: Record<number, RiskKey[]> = {
   2: ["scheduleRisk"],
   3: ["scheduleRisk", "technicalRisk", "healthRisk"],
   4: ["scheduleRisk", "healthRisk"],
-  5: ["scheduleRisk"],
+  5: ["planningRisk", "scheduleRisk"],
   6: ["healthRisk"],
   7: ["scheduleRisk"],
   8: ["scheduleRisk", "collaborationRisk"],

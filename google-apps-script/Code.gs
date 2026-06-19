@@ -29,7 +29,7 @@ const CONFIRMED_RISK_SIGNALS = {
   2: ["scheduleRisk"],
   3: ["scheduleRisk", "technicalRisk", "healthRisk"],
   4: ["scheduleRisk", "healthRisk"],
-  5: ["scheduleRisk"],
+  5: ["planningRisk", "scheduleRisk"],
   6: ["healthRisk"],
   7: ["scheduleRisk"],
   8: ["scheduleRisk", "collaborationRisk"],
@@ -194,7 +194,7 @@ function buildDashboardTeam_(teamId, source, gptSummary, checkins) {
     ...checkins.flatMap((item) => item.riskNotes),
   ].join("\n");
   const parsedSummary = parseGptTeamSummary_(gptLine);
-  const risks = extractRiskSentences_(combined);
+  const risks = compactList_([parsedSummary.risk, ...extractRiskSentences_(combined)], 3);
   const goodPoints = extractPositiveSentences_(source.briefing);
 
   return {
@@ -237,6 +237,7 @@ function parseGptTeamSummary_(line) {
   const parts = line.split(/\s{2,}|\t+/).map((part) => part.trim()).filter(Boolean);
   return {
     summary: parts[2] || parts[1] || "",
+    risk: parts[3] || "",
     question: parts[4] || "",
   };
 }
