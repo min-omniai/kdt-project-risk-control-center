@@ -43,7 +43,7 @@
         position: relative;
         z-index: 1;
         display: grid;
-        grid-template-rows: 64px minmax(0, 1fr) 92px 88px;
+        grid-template-rows: 64px minmax(0, 1fr) 118px 76px;
         width: min(1220px, 94vw, calc((100vh - 44px) * 1.78));
         height: min(610px, calc(100vh - 82px));
         padding: 28px 36px 26px;
@@ -133,7 +133,7 @@
         grid-template-columns: .9fr 1.1fr;
         gap: 28px;
         min-height: 0;
-        padding: 22px 0 18px;
+        padding: 18px 0 14px;
       }
 
       .phase-panel {
@@ -167,53 +167,32 @@
       .final-date { margin: 14px 0 0; color: #fff; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(27px, 3.35vw, 42px); font-weight: 900; letter-spacing: .05em; }
       .final-date b { color: #ffb44f; font-size: .5em; letter-spacing: .1em; }
 
-      .goals { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-height: 0; overflow: visible; }
-      .goal { position: relative; min-width: 0; min-height: 0; border: 1px solid rgba(128,166,218,.27); border-radius: 4px; background: rgba(9,17,30,.92); }
-      .goal[open] { border-color: rgba(98,239,160,.62); box-shadow: 0 0 26px rgba(98,239,160,.12); }
-      .goal summary { display: flex; align-items: center; gap: 12px; width: 100%; height: 100%; min-height: 68px; padding: 11px 15px; cursor: pointer; list-style: none; }
-      .goal summary::-webkit-details-marker { display: none; }
-      .goal summary::after {
-        content: "상세";
-        flex: 0 0 auto;
-        margin-left: auto;
-        padding: 5px 8px;
-        border: 1px solid rgba(155,207,255,.34);
-        border-radius: 999px;
-        color: #9bcfff;
-        background: rgba(6,13,24,.86);
-        font-size: 10px;
-        font-weight: 900;
-        line-height: 1;
-        letter-spacing: .08em;
-      }
-      .goal[open] summary::after { content: "접기"; color: #061320; background: #62efa0; border-color: #62efa0; }
+      .focus-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 310px); gap: 12px; min-height: 0; }
+      .goals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-height: 0; }
+      .goal { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 0; padding: 12px 14px; border: 1px solid rgba(128,166,218,.27); border-radius: 4px; background: rgba(9,17,30,.92); }
       .goal b { flex: 0 0 auto; color: #62efa0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(28px, 3.2vw, 42px); text-shadow: 0 0 22px rgba(98,239,160,.54); }
-      .goal strong { display: block; color: #f5f8ff; font-size: clamp(14px, 1.42vw, 20px); line-height: 1.22; }
+      .goal div { min-width: 0; }
+      .goal strong { display: block; color: #f5f8ff; font-size: clamp(13px, 1.24vw, 18px); line-height: 1.22; word-break: keep-all; overflow-wrap: break-word; }
       .goal em { color: #62efa0; font-style: normal; }
-      .goal span { display: block; margin-top: 3px; color: #9ec5f7; font-size: clamp(11px, .98vw, 14px); line-height: 1.25; }
-      .goal-detail {
-        position: absolute;
-        z-index: 10;
-        top: calc(100% + 8px);
-        left: 0;
-        right: 0;
-        display: grid;
-        gap: 8px;
-        min-width: 260px;
-        padding: 13px 15px;
-        border: 1px solid rgba(155,207,255,.38);
-        border-radius: 5px;
-        color: #dceaff;
-        background: linear-gradient(180deg, rgba(8,18,32,.98), rgba(4,10,19,.98));
-        box-shadow: 0 18px 40px rgba(0,0,0,.45);
-      }
-      .goal-detail p { margin: 0; color: #dceaff; font-size: clamp(11px, .94vw, 13px); line-height: 1.45; word-break: keep-all; overflow-wrap: break-word; }
-      .goal-detail ul { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-      .goal-detail li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 9px; align-items: center; color: #eef6ff; font-size: clamp(11px, .94vw, 13px); line-height: 1.35; }
-      .goal-detail li b { color: #ffb44f; font-size: 1em; text-shadow: none; }
-      .goal-detail li span { margin: 0; color: #eef6ff; }
+      .goal span { display: block; margin-top: 5px; color: #9ec5f7; font-size: clamp(10px, .82vw, 12px); line-height: 1.3; word-break: keep-all; overflow-wrap: break-word; }
 
-      .message { display: grid; align-content: center; min-width: 0; min-height: 0; margin-top: 14px; padding: 17px 30px 16px; overflow: hidden; border: 1px solid rgba(128,166,218,.28); border-left: 4px solid #9bcfff; border-radius: 5px; background: linear-gradient(135deg, rgba(14,27,48,.86), rgba(8,15,27,.92)); }
+      .release-panel {
+        display: grid;
+        align-content: center;
+        gap: 8px;
+        min-width: 0;
+        min-height: 0;
+        padding: 14px 16px;
+        border: 1px solid rgba(255,184,79,.46);
+        border-radius: 4px;
+        background: linear-gradient(135deg, rgba(29,23,16,.95), rgba(9,14,23,.96));
+      }
+      .release-panel small { color: #ffb44f; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 10px; font-weight: 900; letter-spacing: .24em; }
+      .release-item { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px; align-items: center; }
+      .release-item time { color: #fff; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(13px, 1.12vw, 16px); font-weight: 900; }
+      .release-item span { color: #dceaff; font-size: clamp(11px, .96vw, 14px); font-weight: 800; line-height: 1.25; word-break: keep-all; overflow-wrap: break-word; }
+
+      .message { display: grid; align-content: center; min-width: 0; min-height: 0; margin-top: 12px; padding: 14px 26px; overflow: hidden; border: 1px solid rgba(128,166,218,.28); border-left: 4px solid #9bcfff; border-radius: 5px; background: linear-gradient(135deg, rgba(14,27,48,.86), rgba(8,15,27,.92)); }
       .message strong { display: block; max-width: 100%; color: #f5f8ff; font-size: clamp(13px, 1.18vw, 17px); line-height: 1.42; word-break: keep-all; overflow-wrap: break-word; }
       .message em { color: #ffb44f; font-style: normal; }
       .message p { margin: 6px 0 0; color: #9fb4d3; font-size: clamp(11px, .92vw, 14px); line-height: 1.38; word-break: keep-all; overflow-wrap: break-word; }
@@ -237,8 +216,7 @@
         .field { height: auto; min-height: 100vh; }
         .scoreboard { clip-path: none; height: auto; min-height: 0; width: 94vw; grid-template-rows: auto; }
         .scoreboard::before { display: none; }
-        .topline, .main-score, .goals { grid-template-columns: 1fr; }
-        .goal-detail { position: static; min-width: 0; margin: 0 15px 14px; }
+        .topline, .main-score, .focus-row, .goals { grid-template-columns: 1fr; }
         .phase-panel { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.14); }
         .datetime { justify-content: space-between; }
       }
@@ -250,7 +228,7 @@
         .clock { font-size: 42px; }
         .obt { grid-template-columns: 1fr; gap: 8px; }
         h1 { font-size: 88px; }
-        .goal summary { align-items: flex-start; gap: 8px; }
+        .goal { align-items: flex-start; gap: 8px; }
         .field-notice { max-width: 92vw; font-size: 10px; line-height: 1.5; }
       }
     </style>
@@ -281,29 +259,18 @@
           </aside>
         </section>
 
-        <section class="goals" aria-label="OBT 기간 목표">
-          <details class="goal">
-            <summary><b>01</b><div><strong>콘텐츠 개발 <em>100% 완성</em></strong></div></summary>
-            <div class="goal-detail">
-              <p>핵심 플로우, 필수 콘텐츠, 플레이 가능 상태를 OBT 기준으로 마감합니다.</p>
-            </div>
-          </details>
-          <details class="goal">
-            <summary><b>02</b><div><strong>폴리싱</strong><span>아트 리소스 · UI/UX · 연출 · 밸런스</span></div></summary>
-            <div class="goal-detail">
-              <p>첫인상에 영향을 주는 화면, 연출, 밸런스, 조작감을 우선 정리합니다.</p>
-            </div>
-          </details>
-          <details class="goal">
-            <summary><b>03</b><div><strong>출시 준비</strong><span>공개 테스트(OBT) 빌드로 검증</span></div></summary>
-            <div class="goal-detail">
-              <p>공개 테스트(OBT) 빌드 기준으로 출시 전 검증을 진행합니다.</p>
-              <ul>
-                <li><b>06.26 금</b><span>프로덕트 심사 권장</span></li>
-                <li><b>06.30 화</b><span>첫 출시 완료 필수</span></li>
-              </ul>
-            </div>
-          </details>
+        <section class="focus-row" aria-label="OBT 기간 집중 항목과 출시 일정">
+          <div class="goals" aria-label="OBT 기간 목표">
+            <article class="goal"><b>01</b><div><strong>콘텐츠 개발 <em>100% 완성</em></strong><span>핵심 플로우 · 필수 콘텐츠 · 플레이 가능 상태 마감</span></div></article>
+            <article class="goal"><b>02</b><div><strong>폴리싱</strong><span>아트 · UI/UX · 연출 · 밸런스 최종 정리</span></div></article>
+            <article class="goal"><b>03</b><div><strong>출시 준비</strong><span>OBT 빌드 기준 출시 전 검증</span></div></article>
+          </div>
+
+          <aside class="release-panel" aria-label="출시 체크포인트">
+            <small>RELEASE CHECKPOINT</small>
+            <div class="release-item"><time datetime="2026-06-26">06.26 금</time><span>프로덕트 심사 권장</span></div>
+            <div class="release-item"><time datetime="2026-06-30">06.30 화</time><span>첫 출시 완료 필수</span></div>
+          </aside>
         </section>
 
         <section class="message">
@@ -332,16 +299,6 @@
       }
       updateClock();
       setInterval(updateClock, 250);
-
-      const goalDetails = document.querySelectorAll(".goal");
-      goalDetails.forEach((goal) => {
-        goal.addEventListener("toggle", () => {
-          if (!goal.open) return;
-          goalDetails.forEach((otherGoal) => {
-            if (otherGoal !== goal) otherGoal.open = false;
-          });
-        });
-      });
     </script>
   </body>
 </html>
