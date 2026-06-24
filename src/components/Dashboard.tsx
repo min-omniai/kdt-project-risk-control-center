@@ -206,27 +206,29 @@ export function ProgressBar({ value, kind = "progress" }: { value: number; kind?
 }
 
 export function MilestoneTimeline({ milestones, today }: { milestones: Milestone[]; today: string }) {
-  const upcoming = milestones.filter((item) => item.status === "upcoming");
+  const milestonesWithDays = milestones.map((item) => ({ item, days: getDaysUntil(item.date, today) }));
+  const upcoming = milestonesWithDays.filter(({ days }) => days >= 0);
+  const currentIndex = milestonesWithDays.findIndex(({ days }) => days >= 0);
 
   return (
     <section className="panel timeline-panel">
       <SectionTitle title="마일스톤" subtitle="다가오는 마감과 전체 일정" />
       <div className="dday-grid milestone-dday-grid">
-        {upcoming.map((item) => (
+        {upcoming.map(({ item, days }) => (
           <div className="dday-card" key={item.name}>
             <span>{item.name}</span>
-            <strong>{formatDday(getDaysUntil(item.date, today))}</strong>
+            <strong>{formatDday(days)}</strong>
             <small>{item.date.replaceAll("-", ".")}</small>
           </div>
         ))}
       </div>
       <div className="timeline">
-        {milestones.map((item, index) => {
-          const days = getDaysUntil(item.date, today);
-          const isCurrent = item.status !== "completed" && index === milestones.findIndex((milestone) => milestone.status !== "completed");
+        {milestonesWithDays.map(({ item, days }, index) => {
+          const computedStatus = days < 0 ? "completed" : item.status;
+          const isCurrent = index === currentIndex;
           return (
-            <div className={`milestone ${item.status} ${isCurrent ? "current" : ""}`} key={item.name}>
-              <div className="milestone-top"><span className="milestone-dot">{item.status === "completed" ? "✓" : index + 1}</span><span className="timeline-line" /></div>
+            <div className={`milestone ${computedStatus} ${isCurrent ? "current" : ""}`} key={item.name}>
+              <div className="milestone-top"><span className="milestone-dot">{computedStatus === "completed" ? "✓" : index + 1}</span><span className="timeline-line" /></div>
               <strong>{item.name}</strong><small>{item.date.replaceAll("-", ". ")}</small>
               <em>{formatDday(days)}</em>
             </div>

@@ -14,6 +14,24 @@ import { calculateRiskScore, getDaysUntil, getRiskLevel, sortTeamsByRisk } from 
 import { getTodayInTimeZone } from "./utils/date";
 import { useDashboardData } from "./hooks/useDashboardData";
 
+function formatDday(days: number): string {
+  if (days < 0) return `D+${Math.abs(days)}`;
+  if (days === 0) return "D-DAY";
+  return `D-${days}`;
+}
+
+function getFocusMilestone(today: string) {
+  return project.milestones
+    .map((milestone) => ({ milestone, days: getDaysUntil(milestone.date, today) }))
+    .find(({ days }) => days >= 0);
+}
+
+function getMilestoneDetail(name: string, days: number): string {
+  if (days === 0) return "오늘 기준 마일스톤";
+  if (name.includes("CBT 최종")) return "OBT 진행 기간";
+  return "다음 운영 마일스톤";
+}
+
 export default function App() {
   const {
     teams,
@@ -44,8 +62,7 @@ export default function App() {
     .sort((a, b) => a.teamId - b.teamId)
     .map((team) => team.teamName)
     .join(", ");
-  const cbtMilestone = project.milestones.find((item) => item.name.includes("CBT 1"));
-  const cbtDday = cbtMilestone ? getDaysUntil(cbtMilestone.date, today) : 0;
+  const focusMilestone = getFocusMilestone(today);
 
   return (
     <main>
@@ -69,7 +86,13 @@ export default function App() {
           />
           <KpiCard label="질문 수" value={`${requiredQuestionCount}개`} hint="필수 확인 질문 전체" detail="3개씩 넘겨보기" tone="info" />
           <KpiCard label="주의팀 수" value={`${riskTeams}개`} hint="Caution 이상 팀" detail={attentionTeamNames || "해당 없음"} tone="warning" />
-          <KpiCard label="CBT D-day" value={`D-${cbtDday}`} hint={cbtMilestone?.date.replaceAll("-", ".") ?? "일정 없음"} tone="info" />
+          <KpiCard
+            label={focusMilestone?.milestone.name ?? "마일스톤"}
+            value={focusMilestone ? formatDday(focusMilestone.days) : "-"}
+            hint={focusMilestone?.milestone.date.replaceAll("-", ".") ?? "일정 없음"}
+            detail={focusMilestone ? getMilestoneDetail(focusMilestone.milestone.name, focusMilestone.days) : "마일스톤 없음"}
+            tone="info"
+          />
           <KpiCard label="평균위험" value={averageRisk} hint={`${teams.length}개 팀 위험점수 평균`} detail={`최고 ${highestRiskTeams || "-"} ${topTeamScore}점`} tone="warning" />
         </section>
 

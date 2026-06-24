@@ -12,6 +12,7 @@ export const project = {
   milestones: [
     { name: "데모 제출", date: "2026-06-09", status: "completed" },
     { name: "CBT 1차 마감", date: "2026-06-23", status: "upcoming" },
+    { name: "OBT 시작", date: "2026-06-24", status: "upcoming" },
     { name: "CBT 최종 마감", date: "2026-06-30", status: "upcoming" },
     { name: "프로젝트 배포", date: "2026-07-14", status: "upcoming" },
     { name: "발표회", date: "2026-07-16", status: "upcoming" },
