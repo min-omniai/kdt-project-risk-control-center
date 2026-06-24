@@ -789,6 +789,264 @@
         .message { padding: 20px; }
       }
     </style>
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        overflow: hidden;
+        background: #08210f;
+      }
+
+      .field {
+        min-height: 100vh;
+        height: 100vh;
+        padding: clamp(16px, 3vh, 30px) clamp(16px, 3vw, 38px);
+        background:
+          linear-gradient(180deg, rgba(0, 0, 0, .18), rgba(0, 0, 0, .38)),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, .045) 0 9.08%, rgba(0, 0, 0, .09) 9.08% 18.16%),
+          linear-gradient(180deg, #339052, #105b2c);
+      }
+
+      .control-board {
+        display: grid;
+        grid-template-rows: 54px minmax(0, 1fr) 104px 66px 20px;
+        width: min(1220px, 94vw);
+        height: min(640px, calc(100vh - 44px));
+        min-height: 0;
+        padding: 26px 34px 24px;
+        border: 9px solid #07101a;
+        border-radius: 8px;
+        clip-path: polygon(3% 0, 97% 0, 100% 10%, 100% 100%, 0 100%, 0 10%);
+        background:
+          linear-gradient(180deg, rgba(24, 35, 50, .98), rgba(2, 7, 13, .99)),
+          #08101b;
+        box-shadow:
+          0 24px 70px rgba(0, 0, 0, .5),
+          inset 0 0 0 1px rgba(140, 170, 220, .18);
+      }
+
+      .control-board::before {
+        content: "DAEJEON WORLD CUP STADIUM";
+        inset: auto auto calc(100% - 28px) 50%;
+        width: max-content;
+        height: auto;
+        padding: 4px 22px;
+        border: 0;
+        border-radius: 0 0 6px 6px;
+        color: #b7e3f5;
+        background: #17647b;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: .12em;
+        transform: translateX(-50%);
+      }
+
+      .board-top {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 18px;
+        align-items: center;
+        padding: 8px 0 14px;
+        border-bottom: 1px solid rgba(170, 190, 225, .2);
+      }
+
+      .brand {
+        font-size: clamp(15px, 1.45vw, 20px);
+      }
+
+      .brand code {
+        font-size: 10px;
+        letter-spacing: .18em;
+      }
+
+      .datetime {
+        gap: 16px;
+      }
+
+      .date {
+        font-size: clamp(12px, 1.15vw, 16px);
+      }
+
+      .live-clock {
+        gap: 5px;
+        font-size: clamp(34px, 4.5vw, 56px);
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: .92fr 1.08fr;
+        gap: 24px;
+        align-items: stretch;
+        min-height: 0;
+        padding: 22px 0 14px;
+      }
+
+      .hero-grid > div:first-child {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-width: 0;
+        padding: 18px 18px 16px;
+        border-right: 1px solid rgba(255, 255, 255, .14);
+        background:
+          radial-gradient(circle at 52% 60%, rgba(34, 169, 84, .26), transparent 35%),
+          rgba(0, 0, 0, .14);
+      }
+
+      .milestone-label {
+        margin: 0;
+        color: #a9ceff;
+        font-size: clamp(15px, 1.45vw, 22px);
+      }
+
+      .obt-row {
+        display: grid;
+        grid-template-columns: minmax(0, auto) auto;
+        gap: 22px;
+        align-items: center;
+        align-self: center;
+      }
+
+      h1 {
+        font-size: clamp(74px, 11vw, 132px);
+        line-height: .85;
+      }
+
+      .obt-row span {
+        margin: 0;
+        color: #92a9cb;
+        font-size: clamp(16px, 2vw, 26px);
+      }
+
+      .deadline-card {
+        position: relative;
+        justify-self: stretch;
+        width: 100%;
+        min-height: 0;
+        padding: 22px 28px;
+        border-color: rgba(255, 184, 79, .5);
+        border-radius: 4px;
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, .42), rgba(0, 0, 0, .08)),
+          radial-gradient(circle at 20% 50%, rgba(255, 178, 79, .16), transparent 34%),
+          #151516;
+      }
+
+      .deadline-card > span {
+        margin-bottom: 10px;
+        font-size: 12px;
+        letter-spacing: .42em;
+      }
+
+      .deadline-card .dday-big {
+        font-size: clamp(64px, 8.4vw, 104px);
+        line-height: .95;
+      }
+
+      .deadline-date {
+        margin: 10px 0 14px;
+        font-size: clamp(24px, 3.2vw, 38px);
+      }
+
+      .score-pair {
+        gap: 10px;
+      }
+
+      .score-pair div {
+        min-height: 44px;
+      }
+
+      .score-pair span {
+        font-size: 11px;
+      }
+
+      .score-pair strong {
+        font-size: 28px;
+      }
+
+      .goals {
+        align-self: stretch;
+        min-height: 0;
+      }
+
+      .goals h2 {
+        display: none;
+      }
+
+      .goal-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        height: 100%;
+      }
+
+      .goal-card {
+        min-height: 0;
+        height: 100%;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 4px;
+        background: rgba(9, 17, 30, .92);
+      }
+
+      .goal-card b {
+        font-size: clamp(30px, 3.7vw, 48px);
+      }
+
+      .goal-card strong {
+        font-size: clamp(15px, 1.55vw, 23px);
+        line-height: 1.2;
+      }
+
+      .goal-card span {
+        margin-top: 3px;
+        font-size: clamp(12px, 1.05vw, 15px);
+      }
+
+      .message {
+        margin-top: 10px;
+        padding: 12px 18px;
+        border-left-width: 4px;
+        border-radius: 4px;
+      }
+
+      .message strong {
+        font-size: clamp(14px, 1.38vw, 19px);
+        line-height: 1.3;
+      }
+
+      .message p {
+        margin-top: 4px;
+        font-size: clamp(12px, 1vw, 15px);
+      }
+
+      .board-footer {
+        align-self: end;
+        margin-top: 10px;
+        font-size: 11px;
+      }
+
+      @media (max-width: 920px) {
+        body {
+          overflow: auto;
+        }
+
+        .control-board {
+          height: auto;
+          min-height: 0;
+          clip-path: none;
+        }
+
+        .control-board::before {
+          display: none;
+        }
+
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
     <main class="field">
