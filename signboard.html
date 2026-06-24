@@ -6,8 +6,8 @@
     <title>플밍반 마일스톤 전광판</title>
     <style>
       :root {
-        color: #f4f7fb;
-        background: #0d1117;
+        color: #f7fbff;
+        background: #070b10;
         font-family: Pretendard, "Noto Sans KR", Inter, system-ui, sans-serif;
       }
 
@@ -17,254 +17,305 @@
         margin: 0;
         min-width: 320px;
         min-height: 100vh;
-        background:
-          radial-gradient(circle at 78% -14%, rgba(88, 166, 255, .14), transparent 32%),
-          radial-gradient(circle at 8% 100%, rgba(210, 153, 34, .14), transparent 32%),
-          #0d1117;
+        background: #070b10;
       }
 
-      main {
-        width: min(1480px, 100%);
-        min-height: 100vh;
-        margin: 0 auto;
-        padding: 32px;
-      }
-
-      .board {
-        min-height: calc(100vh - 64px);
-        padding: 20px;
-        border: 1px solid rgba(210, 153, 34, .48);
-        border-radius: 14px;
-        background: linear-gradient(135deg, rgba(210, 153, 34, .15), rgba(88, 166, 255, .08) 46%, rgba(63, 185, 80, .08)), #0d1117;
-        box-shadow: 0 28px 90px rgba(0, 0, 0, .34);
-      }
-
-      .frame {
-        min-height: calc(100vh - 104px);
-        padding: 34px;
-        border: 1px solid rgba(240, 246, 252, .16);
-        border-radius: 10px;
-        background: #161b22;
-      }
-
-      header {
+      .stadium {
+        position: relative;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 28px;
         align-items: start;
-        padding-bottom: 28px;
-        border-bottom: 1px solid #30363d;
+        justify-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+        padding: clamp(18px, 4vw, 48px) 18px;
+        background:
+          linear-gradient(180deg, rgba(2, 6, 12, .32), rgba(2, 6, 12, .1) 36%, rgba(2, 6, 12, .38)),
+          url("./assets/stadium-scoreboard-bg.png") center top / cover no-repeat;
       }
 
-      .phase {
-        display: inline-block;
-        margin-bottom: 12px;
-        color: #d29922;
-        font-size: 15px;
+      .stadium::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(0, 0, 0, .22), transparent 22%, transparent 78%, rgba(0, 0, 0, .24));
+        pointer-events: none;
+      }
+
+      .scoreboard-rig {
+        position: relative;
+        z-index: 1;
+        width: min(980px, 92vw);
+        margin-top: clamp(10px, 3vh, 34px);
+        filter: drop-shadow(0 24px 36px rgba(0, 0, 0, .54));
+      }
+
+      .scoreboard-rig::before {
+        content: "";
+        position: absolute;
+        left: 7%;
+        right: 7%;
+        bottom: -16px;
+        height: 16px;
+        border-radius: 0 0 5px 5px;
+        background: linear-gradient(180deg, #48515a, #252b32);
+      }
+
+      .scoreboard {
+        position: relative;
+        display: grid;
+        grid-template-columns: .78fr 1.3fr;
+        min-height: 330px;
+        overflow: hidden;
+        padding: 18px;
+        border: 10px solid #252c33;
+        border-radius: 8px 8px 4px 4px;
+        background: #05080c;
+        clip-path: polygon(4% 0, 96% 0, 100% 12%, 100% 100%, 0 100%, 0 12%);
+      }
+
+      .scoreboard::before {
+        content: "DAEJEON WORLD CUP STADIUM";
+        position: absolute;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 3px 18px;
+        border-radius: 0 0 8px 8px;
+        color: #9ec9dc;
+        background: #1d627b;
+        font-size: 10px;
         font-weight: 900;
-        letter-spacing: .12em;
+        letter-spacing: .1em;
       }
 
-      h1 {
-        margin: 0;
-        font-size: clamp(52px, 7.4vw, 108px);
-        line-height: .98;
-        letter-spacing: 0;
+      .score-panel {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 12px;
+        padding: 30px 22px 20px;
+        border-right: 1px solid rgba(255, 255, 255, .13);
+        background: radial-gradient(circle at 50% 48%, rgba(23, 132, 62, .35), transparent 26%), #090c10;
       }
 
-      .dday {
-        min-width: 190px;
-        padding: 18px 20px;
-        border: 1px solid rgba(210, 153, 34, .48);
-        border-radius: 9px;
-        background: rgba(210, 153, 34, .08);
-        text-align: right;
-      }
-
-      .dday span {
-        display: block;
-        color: #8b949e;
-        font-size: 13px;
-        font-weight: 800;
-      }
-
-      .dday strong {
-        display: block;
-        margin-top: 8px;
-        color: #d29922;
-        font-size: clamp(42px, 4.4vw, 64px);
+      .clock {
+        color: #f7f06a;
+        font-size: clamp(27px, 4vw, 44px);
+        font-weight: 900;
         line-height: 1;
+        text-align: center;
+        text-shadow: 0 0 10px rgba(247, 240, 106, .48);
       }
 
-      .notice {
+      .match {
         display: grid;
-        grid-template-columns: 190px 1fr;
-        gap: 24px;
-        align-items: center;
-        padding: 32px 0;
-        border-bottom: 1px solid #30363d;
+        grid-template-columns: 1fr auto 1fr;
+        gap: 10px;
+        align-items: end;
       }
 
-      .notice span {
-        color: #79c0ff;
-        font-size: 18px;
-        font-weight: 900;
-      }
-
-      .notice p {
-        margin: 0;
-        color: #f0f6fc;
-        font-size: clamp(27px, 3.2vw, 46px);
-        font-weight: 900;
-        line-height: 1.22;
-      }
-
-      .items {
+      .team {
         display: grid;
-        gap: 14px;
-        padding: 28px 0;
-      }
-
-      .item {
-        display: grid;
-        grid-template-columns: 62px minmax(0, 1fr) minmax(150px, auto);
-        gap: 18px;
-        align-items: center;
-        min-height: 92px;
-        padding: 18px 20px;
-        border: 1px solid #30363d;
-        border-radius: 8px;
-        background: #0d1117;
-      }
-
-      .item b {
-        color: #58a6ff;
-        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-        font-size: 21px;
-      }
-
-      .item strong {
-        display: block;
-        margin-bottom: 6px;
-        color: #f0f6fc;
-        font-size: 25px;
-      }
-
-      .item p {
-        margin: 0;
-        color: #c9d1d9;
-        font-size: 18px;
-        line-height: 1.45;
-      }
-
-      .item em {
-        justify-self: end;
-        max-width: 200px;
-        padding: 8px 11px;
-        border: 1px solid rgba(88, 166, 255, .38);
-        border-radius: 999px;
-        color: #79c0ff;
-        background: rgba(88, 166, 255, .08);
-        font-size: 13px;
-        font-style: normal;
+        gap: 6px;
+        color: #ffffff;
+        font-size: clamp(14px, 2vw, 24px);
         font-weight: 900;
         text-align: center;
       }
 
-      footer {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        color: #8b949e;
-        font-size: 13px;
+      .team strong {
+        color: #f7f06a;
+        font-size: clamp(32px, 4.8vw, 54px);
+        line-height: .9;
+        text-shadow: 0 0 12px rgba(247, 240, 106, .42);
       }
 
-      footer span {
-        padding: 8px 10px;
-        border: 1px solid #30363d;
-        border-radius: 999px;
-        background: #0d1117;
+      .period {
+        align-self: center;
+        color: #ff5151;
+        font-size: clamp(16px, 2.4vw, 30px);
+        font-weight: 900;
+      }
+
+      .crest {
+        display: grid;
+        place-items: center;
+        color: #18a64f;
+        font-size: clamp(50px, 8vw, 88px);
+        font-weight: 900;
+        line-height: 1;
+        text-shadow: 0 0 24px rgba(24, 166, 79, .5);
+      }
+
+      .deadline {
+        color: #6cff88;
+        font-size: clamp(26px, 4vw, 48px);
+        font-weight: 900;
+        line-height: 1;
+        text-align: center;
+        text-shadow: 0 0 14px rgba(108, 255, 136, .45);
+      }
+
+      .notice-panel {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 14px;
+        padding: 30px 28px 22px;
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, .72), rgba(0, 0, 0, .28)),
+          radial-gradient(circle at 76% 18%, rgba(90, 172, 255, .22), transparent 28%),
+          #0b0e12;
+      }
+
+      .memorial {
+        justify-self: end;
+        display: grid;
+        gap: 3px;
+        color: #eef4fb;
+        text-align: right;
+      }
+
+      .memorial b {
+        font-size: clamp(15px, 2vw, 24px);
+      }
+
+      .memorial small {
+        color: #c7d0da;
+        font-size: 10px;
         font-weight: 800;
+        letter-spacing: .04em;
       }
 
-      @media (max-width: 820px) {
-        main { padding: 14px; }
-        .board { min-height: calc(100vh - 28px); padding: 10px; }
-        .frame { min-height: calc(100vh - 48px); padding: 18px; }
-        header, .notice { grid-template-columns: 1fr; }
-        h1 { font-size: 44px; }
-        .dday { min-width: 0; text-align: left; }
-        .notice { gap: 10px; }
-        .notice p { font-size: 25px; }
-        .item { grid-template-columns: 1fr; gap: 8px; }
-        .item strong { font-size: 21px; }
-        .item p { font-size: 15px; }
-        .item em { justify-self: start; }
+      .headline {
+        max-width: 580px;
+        margin: 0;
+        color: #ffffff;
+        font-size: clamp(25px, 4.2vw, 54px);
+        font-weight: 900;
+        line-height: 1.16;
+        text-shadow: 0 4px 14px rgba(0, 0, 0, .78);
+      }
+
+      .focus-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        align-self: end;
+      }
+
+      .focus-list article {
+        min-height: 76px;
+        padding: 12px 14px;
+        border: 1px solid rgba(255, 255, 255, .18);
+        border-radius: 4px;
+        background: rgba(5, 8, 12, .74);
+      }
+
+      .focus-list span {
+        display: block;
+        margin-bottom: 5px;
+        color: #7fd4ff;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .focus-list strong {
+        display: block;
+        color: #fff;
+        font-size: clamp(15px, 1.8vw, 22px);
+        line-height: 1.2;
+      }
+
+      .caption {
+        position: relative;
+        z-index: 1;
+        margin-top: 18px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        color: rgba(255, 255, 255, .86);
+        background: rgba(0, 0, 0, .54);
+        font-size: 13px;
+        font-weight: 800;
+        backdrop-filter: blur(8px);
+      }
+
+      @media (max-width: 760px) {
+        .stadium { align-items: center; padding: 16px 10px; }
+        .scoreboard-rig { width: min(560px, 94vw); }
+        .scoreboard {
+          grid-template-columns: 1fr;
+          min-height: 0;
+          padding: 12px;
+          border-width: 7px;
+        }
+        .score-panel {
+          grid-template-columns: auto 1fr auto;
+          grid-template-rows: auto auto;
+          align-items: center;
+          padding: 24px 14px 14px;
+          border-right: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, .13);
+        }
+        .clock { grid-column: 1 / -1; font-size: 28px; }
+        .match { grid-column: 1 / 3; }
+        .crest { display: none; }
+        .deadline { font-size: 27px; }
+        .notice-panel { padding: 18px 14px 16px; }
+        .memorial { justify-self: start; text-align: left; }
+        .headline { font-size: 28px; }
+        .focus-list { grid-template-columns: 1fr; }
+        .caption { max-width: 92vw; text-align: center; }
       }
     </style>
   </head>
   <body>
-    <main>
-      <section class="board" aria-label="플밍반 마일스톤 전광판">
-        <div class="frame">
-          <header>
-            <div>
-              <span class="phase">진행 중</span>
-              <h1>CBT 집중 기간</h1>
+    <main class="stadium">
+      <section class="scoreboard-rig" aria-label="플밍반 축구 전광판">
+        <div class="scoreboard">
+          <aside class="score-panel">
+            <div class="clock">20:07</div>
+            <div class="match" aria-label="마일스톤 스코어">
+              <div class="team">
+                <span>BUILD</span>
+                <strong>0</strong>
+              </div>
+              <div class="period">CBT</div>
+              <div class="team">
+                <span>BUG</span>
+                <strong>0</strong>
+              </div>
             </div>
-            <div class="dday">
-              <span>2026.06.30</span>
-              <strong>D-6</strong>
+            <div class="crest" aria-hidden="true">◆</div>
+            <div class="deadline">D-6</div>
+          </aside>
+
+          <section class="notice-panel">
+            <div class="memorial">
+              <b>CBT 집중 기간</b>
+              <small>2026.06.30 FINAL</small>
             </div>
-          </header>
-
-          <section class="notice">
-            <span>CBT 최종 마감</span>
-            <p>플레이 가능한 빌드와 테스트 범위를 오늘 기준으로 잠급니다.</p>
-          </section>
-
-          <section class="items" aria-label="전 팀 집중 항목">
-            <article class="item">
-              <b>01</b>
-              <div>
+            <p class="headline">우리는 플레이 가능한 빌드로 증명합니다.</p>
+            <div class="focus-list" aria-label="전 팀 집중 항목">
+              <article>
+                <span>01</span>
                 <strong>오늘 빌드 확인</strong>
-                <p>각 팀은 핵심 루프가 실행되는 빌드나 영상 증거를 공유합니다.</p>
-              </div>
-              <em>전 팀 공통</em>
-            </article>
-            <article class="item">
-              <b>02</b>
-              <div>
+              </article>
+              <article>
+                <span>02</span>
                 <strong>완료 기준 잠금</strong>
-                <p>마일스톤 전까지 새 기능보다 필수 플로우 완성을 우선합니다.</p>
-              </div>
-              <em>범위 고정</em>
-            </article>
-            <article class="item">
-              <b>03</b>
-              <div>
+              </article>
+              <article>
+                <span>03</span>
                 <strong>일정 복구표 갱신</strong>
-                <p>밀린 작업은 담당자, 완료일, 포기할 범위를 한 줄로 정리합니다.</p>
-              </div>
-              <em>매일 갱신</em>
-            </article>
-            <article class="item">
-              <b>04</b>
-              <div>
+              </article>
+              <article>
+                <span>04</span>
                 <strong>체크인 작성</strong>
-                <p>오늘 작업, 막힌 점, 내일 첫 작업을 수업 종료 전 남깁니다.</p>
-              </div>
-              <em>마감 전 필수</em>
-            </article>
+              </article>
+            </div>
           </section>
-
-          <footer>
-            <span>플밍반 공통</span>
-            <span>고정 공지 전광판</span>
-            <span>팀별 리스크와 개인 정보 미표시</span>
-          </footer>
         </div>
       </section>
+      <div class="caption">플밍반 공통 공지 · 팀별 리스크와 개인 정보는 표시하지 않습니다.</div>
     </main>
   </body>
 </html>
