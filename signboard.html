@@ -43,7 +43,7 @@
         position: relative;
         z-index: 1;
         display: grid;
-        grid-template-rows: 64px minmax(0, 1fr) 118px 76px;
+        grid-template-rows: 64px minmax(0, 1fr) 112px 82px;
         width: min(1220px, 94vw, calc((100vh - 44px) * 1.78));
         height: min(610px, calc(100vh - 82px));
         padding: 28px 36px 26px;
@@ -167,46 +167,33 @@
       .final-date { margin: 14px 0 0; color: #fff; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(27px, 3.35vw, 42px); font-weight: 900; letter-spacing: .05em; }
       .final-date b { color: #ffb44f; font-size: .5em; letter-spacing: .1em; }
 
-      .focus-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 310px); gap: 12px; min-height: 0; }
       .goals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-height: 0; }
-      .goal { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 0; padding: 12px 14px; border: 1px solid rgba(128,166,218,.27); border-radius: 4px; background: rgba(9,17,30,.92); }
-      .goal b { flex: 0 0 auto; color: #62efa0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(28px, 3.2vw, 42px); text-shadow: 0 0 22px rgba(98,239,160,.54); }
+      .goal { display: flex; align-items: center; gap: 14px; min-width: 0; min-height: 0; padding: 14px 18px; border: 1px solid rgba(128,166,218,.27); border-radius: 4px; background: rgba(9,17,30,.92); }
+      .goal b { flex: 0 0 auto; color: #62efa0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(34px, 3.8vw, 50px); text-shadow: 0 0 22px rgba(98,239,160,.54); }
       .goal div { min-width: 0; }
-      .goal strong { display: block; color: #f5f8ff; font-size: clamp(13px, 1.24vw, 18px); line-height: 1.22; word-break: keep-all; overflow-wrap: break-word; }
+      .goal strong { display: block; color: #f5f8ff; font-size: clamp(15px, 1.48vw, 22px); line-height: 1.2; word-break: keep-all; overflow-wrap: break-word; }
       .goal em { color: #62efa0; font-style: normal; }
-      .goal span { display: block; margin-top: 5px; color: #9ec5f7; font-size: clamp(10px, .82vw, 12px); line-height: 1.3; word-break: keep-all; overflow-wrap: break-word; }
+      .goal span { display: block; margin-top: 6px; color: #9ec5f7; font-size: clamp(11px, .98vw, 14px); line-height: 1.3; word-break: keep-all; overflow-wrap: break-word; }
 
-      .release-panel {
-        display: grid;
-        align-content: center;
-        gap: 8px;
-        min-width: 0;
-        min-height: 0;
-        padding: 14px 16px;
-        border: 1px solid rgba(255,184,79,.46);
-        border-radius: 4px;
-        background: linear-gradient(135deg, rgba(29,23,16,.95), rgba(9,14,23,.96));
-      }
-      .release-panel small { color: #ffb44f; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 10px; font-weight: 900; letter-spacing: .24em; }
-      .release-item { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px; align-items: center; }
-      .release-item time { color: #fff; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(13px, 1.12vw, 16px); font-weight: 900; }
-      .release-item span { color: #dceaff; font-size: clamp(11px, .96vw, 14px); font-weight: 800; line-height: 1.25; word-break: keep-all; overflow-wrap: break-word; }
-
-      .message { display: grid; align-content: center; min-width: 0; min-height: 0; margin-top: 12px; padding: 14px 26px; overflow: hidden; border: 1px solid rgba(128,166,218,.28); border-left: 4px solid #9bcfff; border-radius: 5px; background: linear-gradient(135deg, rgba(14,27,48,.86), rgba(8,15,27,.92)); }
-      .message strong { display: block; max-width: 100%; color: #f5f8ff; font-size: clamp(13px, 1.18vw, 17px); line-height: 1.42; word-break: keep-all; overflow-wrap: break-word; }
-      .message em { color: #ffb44f; font-style: normal; }
-      .message p { margin: 6px 0 0; color: #9fb4d3; font-size: clamp(11px, .92vw, 14px); line-height: 1.38; word-break: keep-all; overflow-wrap: break-word; }
+      .message { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 18px; min-width: 0; min-height: 0; margin-top: 12px; padding: 14px 24px; overflow: hidden; border: 1px solid rgba(255,184,79,.36); border-left: 4px solid #ffb44f; border-radius: 5px; background: linear-gradient(135deg, rgba(29,23,16,.86), rgba(8,15,27,.92)); }
+      .message strong { color: #ffb44f; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(11px, .95vw, 13px); line-height: 1.2; letter-spacing: .22em; white-space: nowrap; }
+      .release-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; min-width: 0; }
+      .release-item { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; min-width: 0; padding: 8px 12px; border: 1px solid rgba(128,166,218,.22); border-radius: 4px; background: rgba(5,12,22,.55); }
+      .release-item time { color: #fff; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(15px, 1.38vw, 20px); font-weight: 900; }
+      .release-item span { color: #dceaff; font-size: clamp(12px, 1.05vw, 15px); font-weight: 900; line-height: 1.25; word-break: keep-all; overflow-wrap: break-word; }
       .field-notice {
         position: relative;
         z-index: 1;
-        padding: 7px 16px;
+        max-width: min(1180px, 92vw);
+        padding: 8px 18px;
         border: 1px solid rgba(255,255,255,.22);
         border-radius: 999px;
         color: rgba(238,248,255,.88);
         background: rgba(0,0,0,.34);
-        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-        font-size: 12px;
-        letter-spacing: .08em;
+        font-size: clamp(11px, 1.05vw, 14px);
+        font-weight: 800;
+        line-height: 1.35;
+        letter-spacing: 0;
         text-align: center;
         backdrop-filter: blur(6px);
       }
@@ -216,7 +203,7 @@
         .field { height: auto; min-height: 100vh; }
         .scoreboard { clip-path: none; height: auto; min-height: 0; width: 94vw; grid-template-rows: auto; }
         .scoreboard::before { display: none; }
-        .topline, .main-score, .focus-row, .goals { grid-template-columns: 1fr; }
+        .topline, .main-score, .goals, .message, .release-list { grid-template-columns: 1fr; }
         .phase-panel { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.14); }
         .datetime { justify-content: space-between; }
       }
@@ -229,6 +216,8 @@
         .obt { grid-template-columns: 1fr; gap: 8px; }
         h1 { font-size: 88px; }
         .goal { align-items: flex-start; gap: 8px; }
+        .message { gap: 10px; padding: 14px 18px; }
+        .message strong { white-space: normal; }
         .field-notice { max-width: 92vw; font-size: 10px; line-height: 1.5; }
       }
     </style>
@@ -259,27 +248,22 @@
           </aside>
         </section>
 
-        <section class="focus-row" aria-label="OBT 기간 집중 항목과 출시 일정">
-          <div class="goals" aria-label="OBT 기간 목표">
-            <article class="goal"><b>01</b><div><strong>콘텐츠 개발 <em>100% 완성</em></strong><span>핵심 플로우 · 필수 콘텐츠 · 플레이 가능 상태 마감</span></div></article>
-            <article class="goal"><b>02</b><div><strong>폴리싱</strong><span>아트 · UI/UX · 연출 · 밸런스 최종 정리</span></div></article>
-            <article class="goal"><b>03</b><div><strong>출시 준비</strong><span>OBT 빌드 기준 출시 전 검증</span></div></article>
-          </div>
-
-          <aside class="release-panel" aria-label="출시 체크포인트">
-            <small>RELEASE CHECKPOINT</small>
-            <div class="release-item"><time datetime="2026-06-26">06.26 금</time><span>프로덕트 심사 권장</span></div>
-            <div class="release-item"><time datetime="2026-06-30">06.30 화</time><span>첫 출시 완료 필수</span></div>
-          </aside>
+        <section class="goals" aria-label="OBT 기간 목표">
+          <article class="goal"><b>01</b><div><strong>콘텐츠 개발 <em>100% 완성</em></strong><span>핵심 플로우 · 필수 콘텐츠 · 플레이 가능 상태 마감</span></div></article>
+          <article class="goal"><b>02</b><div><strong>폴리싱</strong><span>아트 · UI/UX · 연출 · 밸런스 최종 정리</span></div></article>
+          <article class="goal"><b>03</b><div><strong>출시 준비</strong><span>OBT 빌드 기준 출시 전 검증</span></div></article>
         </section>
 
-        <section class="message">
-          <strong>OBT 기간은 <em>"콘텐츠 100% 완성 + 폴리싱 + 출시 준비"</em> 기간입니다.</strong>
-          <p>미완성 콘텐츠를 마무리하고, 공개 테스트(OBT) 빌드 기준으로 출시 전 검증을 진행합니다.</p>
+        <section class="message" aria-label="출시 체크포인트">
+          <strong>RELEASE CHECKPOINT</strong>
+          <div class="release-list">
+            <div class="release-item"><time datetime="2026-06-26">06.26 금</time><span>프로덕트 심사 권장</span></div>
+            <div class="release-item"><time datetime="2026-06-30">06.30 화</time><span>첫 출시 완료 필수</span></div>
+          </div>
         </section>
 
       </section>
-      <div class="field-notice">플밍반 공통 공지 · 팀별 리스크와 개인 정보는 표시하지 않습니다.</div>
+      <div class="field-notice">OBT 기간은 "콘텐츠 100% 완성 + 폴리싱 + 출시 준비" 기간입니다. 미완성 콘텐츠를 마무리하고, 공개 테스트(OBT) 빌드 기준으로 출시 전 검증을 진행합니다.</div>
     </main>
 
     <script>
