@@ -18,6 +18,8 @@
       .field {
         position: relative;
         display: grid;
+        grid-template-rows: auto auto;
+        gap: 12px;
         place-items: center;
         width: 100vw;
         height: 100vh;
@@ -41,10 +43,10 @@
         position: relative;
         z-index: 1;
         display: grid;
-        grid-template-rows: 64px minmax(0, 1fr) 98px 68px 18px;
+        grid-template-rows: 64px minmax(0, 1fr) 106px 72px;
         width: min(1220px, 94vw, calc((100vh - 44px) * 1.78));
-        height: min(640px, calc(100vh - 44px));
-        padding: 28px 34px 22px;
+        height: min(610px, calc(100vh - 82px));
+        padding: 28px 36px 26px;
         border: 10px solid #07101a;
         border-radius: 8px;
         clip-path: polygon(3% 0, 97% 0, 100% 11%, 100% 100%, 0 100%, 0 11%);
@@ -129,9 +131,9 @@
       .main-score {
         display: grid;
         grid-template-columns: .9fr 1.1fr;
-        gap: 24px;
+        gap: 28px;
         min-height: 0;
-        padding: 18px 0 14px;
+        padding: 22px 0 18px;
       }
 
       .phase-panel {
@@ -168,17 +170,30 @@
       .score-pair strong { color: #d9fff0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 28px; }
 
       .goals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-height: 0; }
-      .goal { display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 0; padding: 12px 14px; border: 1px solid rgba(128,166,218,.27); border-radius: 4px; background: rgba(9,17,30,.92); }
+      .goal { display: flex; align-items: center; gap: 14px; min-width: 0; min-height: 0; padding: 14px 16px; border: 1px solid rgba(128,166,218,.27); border-radius: 4px; background: rgba(9,17,30,.92); }
       .goal b { flex: 0 0 auto; color: #62efa0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: clamp(30px, 3.7vw, 48px); text-shadow: 0 0 22px rgba(98,239,160,.54); }
       .goal strong { display: block; color: #f5f8ff; font-size: clamp(15px, 1.55vw, 23px); line-height: 1.2; }
       .goal em { color: #62efa0; font-style: normal; }
       .goal span { display: block; margin-top: 3px; color: #9ec5f7; font-size: clamp(12px, 1.05vw, 15px); }
 
-      .message { min-height: 0; margin-top: 10px; padding: 12px 18px; border: 1px solid rgba(128,166,218,.28); border-left: 4px solid #9bcfff; border-radius: 4px; background: linear-gradient(135deg, rgba(14,27,48,.86), rgba(8,15,27,.92)); }
+      .message { min-height: 0; margin-top: 14px; padding: 14px 20px; border: 1px solid rgba(128,166,218,.28); border-left: 4px solid #9bcfff; border-radius: 4px; background: linear-gradient(135deg, rgba(14,27,48,.86), rgba(8,15,27,.92)); }
       .message strong { display: block; color: #f5f8ff; font-size: clamp(14px, 1.38vw, 19px); line-height: 1.3; }
       .message em { color: #ffb44f; font-style: normal; }
       .message p { margin: 4px 0 0; color: #9fb4d3; font-size: clamp(12px, 1vw, 15px); }
-      .footer { align-self: end; color: #7188aa; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 11px; letter-spacing: .12em; text-align: center; }
+      .field-notice {
+        position: relative;
+        z-index: 1;
+        padding: 7px 16px;
+        border: 1px solid rgba(255,255,255,.22);
+        border-radius: 999px;
+        color: rgba(238,248,255,.88);
+        background: rgba(0,0,0,.34);
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 12px;
+        letter-spacing: .08em;
+        text-align: center;
+        backdrop-filter: blur(6px);
+      }
 
       @media (max-width: 920px) {
         body { overflow: auto; }
@@ -199,6 +214,7 @@
         h1 { font-size: 88px; }
         .score-pair { grid-template-columns: 1fr; }
         .goal { align-items: flex-start; flex-direction: column; gap: 4px; }
+        .field-notice { max-width: 92vw; font-size: 10px; line-height: 1.5; }
       }
     </style>
   </head>
@@ -240,8 +256,8 @@
           <p>미완성 콘텐츠를 마무리하고, 공개 테스트(OBT) 빌드 기준으로 출시 전 검증을 진행합니다.</p>
         </section>
 
-        <footer class="footer">플밍반 공통 공지 · 팀별 리스크와 개인 정보는 표시하지 않습니다.</footer>
       </section>
+      <div class="field-notice">플밍반 공통 공지 · 팀별 리스크와 개인 정보는 표시하지 않습니다.</div>
     </main>
 
     <script>
