@@ -174,10 +174,10 @@
       .goal em { color: #62efa0; font-style: normal; }
       .goal span { display: block; margin-top: 3px; color: #9ec5f7; font-size: clamp(11px, .98vw, 14px); line-height: 1.25; }
 
-      .message { display: grid; align-content: center; min-height: 0; margin-top: 14px; padding: 18px 26px 17px; overflow: hidden; border: 1px solid rgba(128,166,218,.28); border-left: 4px solid #9bcfff; border-radius: 5px; background: linear-gradient(135deg, rgba(14,27,48,.86), rgba(8,15,27,.92)); }
-      .message strong { display: block; color: #f5f8ff; font-size: clamp(13px, 1.28vw, 18px); line-height: 1.38; }
+      .message { display: grid; align-content: center; min-width: 0; min-height: 0; margin-top: 14px; padding: 17px 30px 16px; overflow: hidden; border: 1px solid rgba(128,166,218,.28); border-left: 4px solid #9bcfff; border-radius: 5px; background: linear-gradient(135deg, rgba(14,27,48,.86), rgba(8,15,27,.92)); }
+      .message strong { display: block; max-width: 100%; color: #f5f8ff; font-size: clamp(13px, 1.18vw, 17px); line-height: 1.42; word-break: keep-all; overflow-wrap: break-word; }
       .message em { color: #ffb44f; font-style: normal; }
-      .message p { margin: 6px 0 0; color: #9fb4d3; font-size: clamp(11px, .95vw, 14px); line-height: 1.35; }
+      .message p { margin: 6px 0 0; color: #9fb4d3; font-size: clamp(11px, .92vw, 14px); line-height: 1.38; word-break: keep-all; overflow-wrap: break-word; }
       .field-notice {
         position: relative;
         z-index: 1;
@@ -248,7 +248,7 @@
         </section>
 
         <section class="message">
-          <strong>CBT 기간이 "콘텐츠 개발 향상"이었다면, OBT 기간은 <em>"콘텐츠 100% 완성 + 폴리싱 + 출시 준비"</em> 기간입니다.</strong>
+          <strong>OBT 기간은 <em>"콘텐츠 100% 완성 + 폴리싱 + 출시 준비"</em> 기간입니다.</strong>
           <p>미완성 콘텐츠를 마무리하고, 공개 테스트(OBT) 빌드 기준으로 출시 전 검증을 진행합니다.</p>
         </section>
 
