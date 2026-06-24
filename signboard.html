@@ -266,56 +266,490 @@
         .caption { max-width: 92vw; text-align: center; }
       }
     </style>
+    <style>
+      body {
+        min-height: 100vh;
+        overflow-x: hidden;
+        background: #1c7b3d;
+      }
+
+      .field {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        padding: clamp(20px, 4vw, 46px);
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, .07) 0 1px, transparent 1px 18.2%),
+          repeating-linear-gradient(90deg, rgba(255, 255, 255, .04) 0 13.8%, rgba(0, 0, 0, .09) 13.8% 27.6%),
+          linear-gradient(180deg, rgba(57, 154, 90, .82), rgba(10, 81, 41, .96));
+      }
+
+      .field::before {
+        content: "";
+        position: absolute;
+        inset: 3%;
+        border: 3px solid rgba(255, 255, 255, .18);
+        border-radius: 4px;
+        pointer-events: none;
+      }
+
+      .field::after {
+        content: "";
+        position: absolute;
+        top: 3%;
+        bottom: 3%;
+        left: 50%;
+        width: 3px;
+        background: rgba(255, 255, 255, .15);
+        transform: translateX(-50%);
+        pointer-events: none;
+      }
+
+      .control-board {
+        position: relative;
+        z-index: 1;
+        width: min(1480px, 92vw);
+        min-height: min(860px, calc(100vh - 70px));
+        padding: clamp(28px, 4vw, 54px);
+        border: 14px solid #030812;
+        border-radius: 22px;
+        background:
+          radial-gradient(circle at 82% 13%, rgba(92, 150, 255, .12), transparent 28%),
+          linear-gradient(180deg, rgba(11, 21, 38, .98), rgba(2, 7, 13, .99));
+        box-shadow: 0 38px 90px rgba(0, 0, 0, .44);
+      }
+
+      .control-board::before {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border: 1px solid rgba(128, 166, 218, .18);
+        border-radius: 12px;
+        pointer-events: none;
+      }
+
+      .board-top {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 28px;
+        align-items: center;
+        padding-bottom: 30px;
+        border-bottom: 1px solid rgba(151, 182, 223, .2);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #fff;
+        font-size: clamp(17px, 1.5vw, 23px);
+        font-weight: 900;
+      }
+
+      .brand::before {
+        content: "";
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #62efa0;
+        box-shadow: 0 0 18px rgba(98, 239, 160, .9);
+      }
+
+      .brand code {
+        padding: 5px 10px;
+        border: 1px solid rgba(128, 166, 218, .36);
+        border-radius: 4px;
+        color: #8eb3e7;
+        background: rgba(8, 17, 31, .78);
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: .28em;
+      }
+
+      .datetime {
+        display: flex;
+        align-items: baseline;
+        gap: 22px;
+        color: #9bc4ff;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .date {
+        font-size: clamp(14px, 1.4vw, 19px);
+        letter-spacing: .18em;
+      }
+
+      .live-clock {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        color: #d9fff0;
+        font-size: clamp(46px, 5.4vw, 74px);
+        font-weight: 900;
+        line-height: 1;
+        text-shadow: 0 0 22px rgba(149, 255, 207, .25);
+      }
+
+      .live-clock .seconds {
+        color: #9dccff;
+        font-size: .72em;
+      }
+
+      .live-clock .colon {
+        color: rgba(139, 255, 207, .32);
+        transition: opacity .12s linear;
+      }
+
+      .live-clock .colon.dim {
+        opacity: .18;
+      }
+
+      .hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1.05fr .95fr;
+        gap: clamp(28px, 5vw, 78px);
+        align-items: center;
+        padding: clamp(46px, 7vh, 96px) 0 34px;
+      }
+
+      .milestone-label {
+        margin: 0 0 10px;
+        color: #8dbdff;
+        font-size: clamp(20px, 2vw, 29px);
+        font-weight: 900;
+        letter-spacing: .08em;
+      }
+
+      .obt-row {
+        display: flex;
+        align-items: flex-end;
+        gap: clamp(22px, 3vw, 40px);
+      }
+
+      h1 {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(112px, 15vw, 205px);
+        line-height: .78;
+        letter-spacing: 0;
+        text-shadow: 0 0 28px rgba(255, 255, 255, .12);
+      }
+
+      .obt-row span {
+        margin-bottom: .18em;
+        color: #8ea7cb;
+        font-size: clamp(22px, 2.4vw, 34px);
+        font-weight: 500;
+        line-height: 1.08;
+        letter-spacing: .15em;
+      }
+
+      .deadline-card {
+        justify-self: end;
+        width: min(540px, 100%);
+        padding: clamp(26px, 3.2vw, 38px);
+        border: 1px solid rgba(255, 176, 70, .42);
+        border-radius: 12px;
+        background:
+          radial-gradient(circle at 12% 47%, rgba(255, 176, 70, .14), transparent 34%),
+          linear-gradient(135deg, rgba(35, 35, 38, .98), rgba(18, 18, 21, .98));
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .035);
+      }
+
+      .deadline-card > span {
+        display: block;
+        margin-bottom: 20px;
+        color: #ffb652;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: .48em;
+      }
+
+      .deadline-card .dday-big {
+        color: #ffb44f;
+        font-size: clamp(92px, 10vw, 150px);
+        font-weight: 900;
+        line-height: .9;
+        text-shadow: 0 0 30px rgba(255, 180, 79, .32);
+      }
+
+      .deadline-date {
+        margin: 24px 0 28px;
+        color: #fff;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: clamp(34px, 3.8vw, 50px);
+        font-weight: 900;
+        letter-spacing: .05em;
+      }
+
+      .deadline-date b {
+        color: #ffb44f;
+        font-family: inherit;
+        font-size: .5em;
+        letter-spacing: .1em;
+      }
+
+      .score-pair {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .score-pair div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 62px;
+        padding: 0 14px;
+        border: 1px solid rgba(128, 166, 218, .22);
+        border-radius: 7px;
+        background: rgba(9, 15, 27, .35);
+      }
+
+      .score-pair span {
+        color: #87a8d6;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 13px;
+        letter-spacing: .35em;
+      }
+
+      .score-pair strong {
+        color: #d9fff0;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 33px;
+      }
+
+      .goals {
+        position: relative;
+        z-index: 1;
+      }
+
+      .goals h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 0 18px;
+        color: #f5f8ff;
+        font-size: clamp(22px, 2vw, 29px);
+      }
+
+      .goals h2::before {
+        content: "";
+        width: 6px;
+        height: 30px;
+        border-radius: 999px;
+        background: #62efa0;
+        box-shadow: 0 0 18px rgba(98, 239, 160, .78);
+      }
+
+      .goal-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+      }
+
+      .goal-card {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        min-height: 116px;
+        padding: 24px 28px;
+        border: 1px solid rgba(128, 166, 218, .27);
+        border-radius: 9px;
+        background: linear-gradient(135deg, rgba(14, 27, 48, .96), rgba(8, 15, 27, .98));
+      }
+
+      .goal-card b {
+        color: #62efa0;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: clamp(46px, 5vw, 66px);
+        text-shadow: 0 0 22px rgba(98, 239, 160, .54);
+      }
+
+      .goal-card strong {
+        display: block;
+        color: #f5f8ff;
+        font-size: clamp(24px, 2.5vw, 35px);
+      }
+
+      .goal-card em {
+        color: #62efa0;
+        font-style: normal;
+      }
+
+      .goal-card span {
+        display: block;
+        margin-top: 6px;
+        color: #9ec5f7;
+        font-size: clamp(15px, 1.4vw, 18px);
+      }
+
+      .message {
+        position: relative;
+        z-index: 1;
+        margin-top: 28px;
+        padding: 26px 28px;
+        border: 1px solid rgba(128, 166, 218, .28);
+        border-left: 5px solid #9bcfff;
+        border-radius: 9px;
+        background: linear-gradient(135deg, rgba(14, 27, 48, .86), rgba(8, 15, 27, .92));
+      }
+
+      .message strong {
+        display: block;
+        color: #f5f8ff;
+        font-size: clamp(20px, 2vw, 27px);
+        line-height: 1.45;
+      }
+
+      .message em {
+        color: #ffb44f;
+        font-style: normal;
+      }
+
+      .message p {
+        margin: 12px 0 0;
+        color: #9fb4d3;
+        font-size: clamp(16px, 1.4vw, 19px);
+      }
+
+      .board-footer {
+        position: relative;
+        z-index: 1;
+        margin-top: 38px;
+        color: #7188aa;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 13px;
+        letter-spacing: .12em;
+        text-align: center;
+      }
+
+      @media (max-width: 920px) {
+        .control-board { width: 94vw; padding: 24px; border-width: 9px; }
+        .board-top, .hero-grid { grid-template-columns: 1fr; }
+        .datetime { justify-content: space-between; }
+        .deadline-card { justify-self: stretch; }
+        .goal-grid { grid-template-columns: 1fr; }
+      }
+
+      @media (max-width: 580px) {
+        .field { padding: 12px; }
+        .control-board { min-height: auto; padding: 18px; }
+        .board-top { gap: 16px; padding-bottom: 18px; }
+        .brand { flex-wrap: wrap; }
+        .brand code { letter-spacing: .16em; }
+        .datetime { align-items: flex-start; flex-direction: column; gap: 8px; }
+        .live-clock { font-size: 42px; }
+        .hero-grid { padding: 34px 0 24px; gap: 26px; }
+        h1 { font-size: 94px; }
+        .obt-row { align-items: flex-start; flex-direction: column; gap: 10px; }
+        .obt-row span { margin-bottom: 0; }
+        .deadline-card { padding: 22px; }
+        .deadline-card .dday-big { font-size: 78px; }
+        .deadline-date { font-size: 30px; }
+        .score-pair { grid-template-columns: 1fr; }
+        .goal-card { align-items: flex-start; flex-direction: column; gap: 8px; }
+        .message { padding: 20px; }
+      }
+    </style>
   </head>
   <body>
-    <main class="stadium">
-      <section class="scoreboard-rig" aria-label="플밍반 축구 전광판">
-        <div class="scoreboard">
-          <aside class="score-panel">
-            <div class="clock">20:07</div>
-            <div class="match" aria-label="마일스톤 스코어">
-              <div class="team">
-                <span>BUILD</span>
-                <strong>0</strong>
-              </div>
-              <div class="period">CBT</div>
-              <div class="team">
-                <span>BUG</span>
-                <strong>0</strong>
-              </div>
+    <main class="field">
+      <section class="control-board" aria-label="플밍반 OBT 전광판">
+        <header class="board-top">
+          <div class="brand">
+            <span>플밍반 전광판</span>
+            <code>RISK CONTROL CENTER</code>
+          </div>
+          <div class="datetime" aria-label="현재 날짜와 시간">
+            <span class="date" id="current-date">2026.06.24</span>
+            <div class="live-clock" aria-live="polite">
+              <span id="clock-hour">14</span>
+              <span class="colon" data-colon>:</span>
+              <span id="clock-minute">07</span>
+              <span class="colon" data-colon>:</span>
+              <span class="seconds" id="clock-second">56</span>
             </div>
-            <div class="crest" aria-hidden="true">◆</div>
-            <div class="deadline">D-6</div>
-          </aside>
+          </div>
+        </header>
 
-          <section class="notice-panel">
-            <div class="memorial">
-              <b>CBT 집중 기간</b>
-              <small>2026.06.30 FINAL</small>
+        <section class="hero-grid">
+          <div>
+            <p class="milestone-label">3차 마일스톤</p>
+            <div class="obt-row">
+              <h1>OBT</h1>
+              <span>OPEN<br />BETA<br />TEST</span>
             </div>
-            <p class="headline">우리는 플레이 가능한 빌드로 증명합니다.</p>
-            <div class="focus-list" aria-label="전 팀 집중 항목">
-              <article>
-                <span>01</span>
-                <strong>오늘 빌드 확인</strong>
-              </article>
-              <article>
-                <span>02</span>
-                <strong>완료 기준 잠금</strong>
-              </article>
-              <article>
-                <span>03</span>
-                <strong>일정 복구표 갱신</strong>
-              </article>
-              <article>
-                <span>04</span>
-                <strong>체크인 작성</strong>
-              </article>
+          </div>
+
+          <aside class="deadline-card" aria-label="마일스톤 마감">
+            <span>MILESTONE DEADLINE</span>
+            <div class="dday-big">D-6</div>
+            <div class="deadline-date">2026.06.30 <b>FINAL</b></div>
+            <div class="score-pair">
+              <div><span>BUILD</span><strong>0</strong></div>
+              <div><span>BUG</span><strong>0</strong></div>
             </div>
-          </section>
-        </div>
+          </aside>
+        </section>
+
+        <section class="goals" aria-label="OBT 기간 목표">
+          <h2>OBT 기간의 두 가지 목표</h2>
+          <div class="goal-grid">
+            <article class="goal-card">
+              <b>01</b>
+              <div>
+                <strong>콘텐츠 개발 <em>100% 완성</em></strong>
+              </div>
+            </article>
+            <article class="goal-card">
+              <b>02</b>
+              <div>
+                <strong>폴리싱</strong>
+                <span>아트 리소스 · UI/UX · 연출 · 밸런스</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="message">
+          <strong>CBT 기간이 "콘텐츠 개발 향상"이었다면, OBT 기간은 <em>"콘텐츠 100% 완성 + 폴리싱"</em> 기간입니다.</strong>
+          <p>미완성 콘텐츠를 마무리하고, 게임을 다듬는 작업에 집중합니다.</p>
+        </section>
+
+        <footer class="board-footer">플밍반 공통 공지 · 팀별 리스크와 개인 정보는 표시하지 않습니다.</footer>
       </section>
-      <div class="caption">플밍반 공통 공지 · 팀별 리스크와 개인 정보는 표시하지 않습니다.</div>
     </main>
+
+    <script>
+      const dateElement = document.getElementById("current-date");
+      const hourElement = document.getElementById("clock-hour");
+      const minuteElement = document.getElementById("clock-minute");
+      const secondElement = document.getElementById("clock-second");
+      const colonElements = document.querySelectorAll("[data-colon]");
+
+      function pad(value) {
+        return String(value).padStart(2, "0");
+      }
+
+      function updateClock() {
+        const now = new Date();
+        dateElement.textContent = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}`;
+        hourElement.textContent = pad(now.getHours());
+        minuteElement.textContent = pad(now.getMinutes());
+        secondElement.textContent = pad(now.getSeconds());
+        colonElements.forEach((colon) => colon.classList.toggle("dim", now.getSeconds() % 2 === 0));
+      }
+
+      updateClock();
+      setInterval(updateClock, 250);
+    </script>
   </body>
 </html>
